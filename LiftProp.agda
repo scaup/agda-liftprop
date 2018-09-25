@@ -1,0 +1,109 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
+module LiftProp where
+
+open import Data.Product
+open import Monad.List public
+open import Monad.State public
+open import Imports
+
+record LiftProp {A : Set} {M : Set → Set} {{ Mimp : Monad M }} (P : A → Set) (monadicValue : M A) : Set where
+  constructor [_<>_]
+  field
+    monadicValueX : M (Σ[ x ∈ A ] P x)
+    proofPPE : monadicValue ≡ fmap proj₁ monadicValueX
+
+open LiftProp public
+
+-- Trivial property {{{
+
+implicationLiftProp : ∀{A M} → {{ Mimp : Monad M }} → {P P' : A → Set} → {ma : M A} → ({a : A} → P a → P' a) → LiftProp P ma → LiftProp P' ma
+implicationLiftProp PimpP' record { monadicValueX = monadicValueX ; proofPPE = refl } = record { monadicValueX = mvX ; proofPPE = pPPE }
+  where
+    impToSigma : {A : Set} → {P : A → Set} → {P' : A → Set} → (imp : {a : A} → P a → P' a) → Σ[ a ∈ A ] (P a) → Σ[ a ∈ A ] (P' a)
+    impToSigma imp (a , p) = (a , imp p)
+    mvX = fmap (impToSigma PimpP') monadicValueX
+    pPPE = law-composition (impToSigma PimpP') proj₁ monadicValueX
+
+-- }}}
+
+-- differentBind {{{
+
+returnLP : {M : Set → Set} → {{ Mimp : Monad M }} →
+           {A : Set} → {P : A → Set} →
+           (aX : Σ[ a ∈ A ] (P a)) → LiftProp {A} {M} {{Mimp}}  P (return (proj₁ aX))
+monadicValueX (returnLP aX) = return aX
+proofPPE (returnLP aX) = sym (leftId _ _)
+
+_>>=LP_ : {M : Set → Set} → {{ Mimp : Monad M }} →
+         {A B : Set} → {P : A → Set} → {Q : B → Set} →
+         {ma : M A} → {f : A → M B} →
+            (P[ma] : LiftProp P ma) →
+            (flp : (aX : Σ[ a ∈ A ] P a) → LiftProp Q (f (proj₁ aX))) →
+              LiftProp Q (ma >>= f)
+monadicValueX (_>>=LP_ {M} {{Mimp}} {A} {B} {P} {Q} {ma} {f} [ maX <> maXPPE ] flp) = maX >>= (monadicValueX ∘ flp)
+proofPPE (_>>=LP_ {M} {{Mimp}} {A} {B} {P} {Q} {ma} {f} [ maX <> maXPPE ] flp) = sym $
+                   begin
+                     (
+                     fmap proj₁
+                     do
+                       (a , pa) ← maX
+                       monadicValueX (flp ((a , pa)))
+                     )
+                   ≡⟨ assoc _ _ _ ⟩
+                     (
+                     do
+                       (a , pa) ← maX
+                       fmap proj₁ (monadicValueX (flp (a , pa)))
+                     )
+                     -- maX >>= (λ aX → (monadicValueX (flp aX) >>= (return ∘ proj₁)))
+                   ≡⟨ cong (_>>=_ maX) (funext (λ aX → sym (helpLemma (proofPPE (flp aX))))) ⟩
+                     (
+                     do
+                       (a , pa) ← maX
+                       x ← f a
+                       return x
+                     )
+                     -- maX >>= (λ aX → (f (proj₁ aX) >>= return))
+                   ≡⟨ cong (_>>=_ maX) (funext λ aX → rightId _) ⟩
+                     (
+                     do
+                       (a , pa) ← maX
+                       f a
+                     )
+                     -- maX >>= (λ aX → f (proj₁ aX))
+                   ≡⟨ sym (helpLemma maXPPE) ⟩
+                     ma >>= f ∎
+  where
+    helpLemma : {M : Set → Set} {{Mimp : Monad M}} → {A B X : Set} →
+                {ma : M A} → {mb : M B} → {p : B → A} → {f : A → M X} → (eq : ma ≡ fmap p mb) →
+                ma >>= f ≡ mb >>= (f ∘ p)
+    helpLemma {M} {{Mimp}} {A} {B} {X} {ma} {mb} {p} {f} eq =
+                            begin
+                               ma >>= f
+                            ≡⟨ cong (λ z → z >>= f) (eq) ⟩
+                              fmap p mb >>= f
+                            ≡⟨ assoc _ _ mb ⟩
+                              mb >>= (λ x → (return (p x) >>= f))
+                            ≡⟨ cong (_>>=_ mb) (funext λ x → (leftId _ (p x) ))  ⟩
+                              mb >>= (λ x → f (p x))
+                            ≡⟨⟩
+                              mb >>= (f ∘ p) ∎
+
+
+_>>LP_ : {M : Set → Set} → {{ Mimp : Monad M }} →
+         {A B : Set} → {P : A → Set} → {Q : B → Set} →
+         {ma : M A} → {mb : M B} →
+              (P[ma] : LiftProp P ma) → (Q[mb] : LiftProp Q mb) → LiftProp Q (ma >> mb)
+_>>LP_ P[ma] Q[mb] = P[ma] >>=LP λ _ → Q[mb]
+
+
+-- }}}
+
+-- lift monadic value over ⊤ {{{
+
+toLP : {M : Set → Set} → {{ Mimp : Monad M }} → {A : Set} →
+  (ma : M A) → LiftProp (λ _ → ⊤) ma
+toLP ma = [ fmap (\x → (x , tt)) ma <> {!!} ]
+
+-- }}}
