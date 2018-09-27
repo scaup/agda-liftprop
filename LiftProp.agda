@@ -11,7 +11,7 @@ Predicate : (A : Set) → Set₁
 Predicate A = A → Set
 
 record LiftProp {A : Set} {M : Set → Set} {{ Mimp : Monad M }} (P : Predicate A) (monadicValue : M A) : Set where
-  constructor [_<>_]
+  constructor ⟦_<>_⟧
   field
     monadicValueX : M (Σ[ x ∈ A ] P x)
     proofPPE : monadicValue ≡ fmap proj₁ monadicValueX
@@ -44,8 +44,8 @@ _>>=LP_ : {M : Set → Set} → {{ Mimp : Monad M }} →
             (P[ma] : LiftProp P ma) →
             (flp : (aX : Σ[ a ∈ A ] P a) → LiftProp Q (f (proj₁ aX))) →
               LiftProp Q (ma >>= f)
-monadicValueX (_>>=LP_ {M} {{Mimp}} {A} {B} {P} {Q} {ma} {f} [ maX <> maXPPE ] flp) = maX >>= (monadicValueX ∘ flp)
-proofPPE (_>>=LP_ {M} {{Mimp}} {A} {B} {P} {Q} {ma} {f} [ maX <> maXPPE ] flp) = sym $
+monadicValueX (_>>=LP_ {M} {{Mimp}} {A} {B} {P} {Q} {ma} {f} ⟦ maX <> maXPPE ⟧ flp) = maX >>= (monadicValueX ∘ flp)
+proofPPE (_>>=LP_ {M} {{Mimp}} {A} {B} {P} {Q} {ma} {f} ⟦ maX <> maXPPE ⟧ flp) = sym $
                    begin
                      (
                      fmap proj₁
@@ -108,7 +108,7 @@ _>>LP_ P[ma] Q[mb] = P[ma] >>=LP λ _ → Q[mb]
 
 toLP : {M : Set → Set} → {{ Mimp : Monad M }} → {A : Set} →
   (ma : M A) → LiftProp (λ _ → ⊤) ma
-toLP ma = [ fmap (\x → (x , tt)) ma <> {!!} ]
+toLP ma = ⟦ fmap (\x → (x , tt)) ma <> {!!} ⟧
 
 -- }}}
 -- lemma about P ∧ Q {{{

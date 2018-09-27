@@ -62,3 +62,8 @@ instance
                                       xs ++ (ys ++ zs) ≡ (xs ++ ys) ++ zs
                       associativity [] ys zs = refl
                       associativity (x ∷ xs) ys zs = cong (_∷_ x) (associativity xs ys zs)
+
+
+range : ℕ → List ℕ
+range zero = []
+range (suc n) = range n ++ (n ∷ [])

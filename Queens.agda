@@ -2,7 +2,7 @@ module Queens where
 
 open import Monad.List
 open import LiftProp
-import LiftProp.List
+open import LiftProp.List
 
 
 -- stdlib {{{
@@ -19,6 +19,7 @@ open import Function
 open import Relation.Unary using (Decidable)
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
+
 -- }}}
 
 
@@ -90,7 +91,6 @@ qs [ n ]AreNotAttacking? q = f (_ ∉? _ ) (f (_ ∉? _) (_ ∉? _))
     f (yes p) (no ¬p) = no λ x → ¬p (proj₂ x)
     f (no ¬p) dq = no λ x → ¬p (proj₁ x)
 
-open LiftProp.List using (range)
 
 queensCasual : ℕ → ℕ → List (List ℕ)
 queensCasual n zero = [] ∷ []
@@ -101,18 +101,15 @@ queensCasual n (suc k) =
     return (q ∷ qs)
 
 
-
 -- first {{{
 
 module first where
-  -- open LiftProp renaming (_>>=LP_ to _>>=_)
-  queensCasualProven : (n : ℕ) → (k : ℕ) → LiftProp (PeacefulQueens n) (queensCasual n k)
-  queensCasualProven n zero = [ ( ([] , [ [] <> refl ] , tt , tt) ∷ []) <> refl ]
+  queensCasualProven : (n : ℕ) → (k : ℕ) → LiftProp.LiftProp (PeacefulQueens n) (queensCasual n k)
+  queensCasualProven n zero = ⟦ ( ([] , ⟦ [] <> refl ⟧ , tt , tt) ∷ []) <> refl ⟧
   queensCasualProven n (suc k) =
     let
       _>>=_ = _>>=LP_
       return = returnLP
-      open LiftProp.List
     in
     do
       (qs , qsp) ← queensCasualProven n k
@@ -125,7 +122,7 @@ module first where
 -- suggested _∧LP_ by dominique {{{
 
 queensCasualProven : (n : ℕ) → (k : ℕ) → LiftProp (PeacefulQueens n) (queensCasual n k)
-queensCasualProven n zero = [ ( ([] , [ [] <> refl ] , tt , tt) ∷ []) <> refl ]
+queensCasualProven n zero = ⟦ ( ([] , ⟦ [] <> refl ⟧ , tt , tt) ∷ []) <> refl ⟧
 queensCasualProven n (suc k) =
   let
     _>>=_ = _>>=LP_
@@ -134,6 +131,23 @@ queensCasualProven n (suc k) =
   in
   do
     (qs , qsp) ← queensCasualProven n k
-    (q , (qp₁ , qp₂)) ← (LiftProp.List.filter (λ q → qs [ n ]AreNotAttacking? q) (rangeLP n))
+    (q , (qp₁ , qp₂)) ← let
+                          ps = filter (λ q → qs [ n ]AreNotAttacking? q) (range n)
+                        in {!!} ∧LP {!!}
     return (q ∷ qs , ({!!} , {!!} , {!!}))
 
+
+-- }}}
+
+-- custom application? {{{
+
+
+
+-- }}}
+
+-- queens again {{{
+
+
+
+
+-- }}}
