@@ -3,8 +3,7 @@
 module LiftProp where
 
 open import Data.Product
-open import Monad.List public
-open import Monad.State public
+open import Monad
 open import Imports hiding (_∧_)
 
 Predicate : (A : Set) → Set₁
