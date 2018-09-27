@@ -5,9 +5,12 @@ module LiftProp where
 open import Data.Product
 open import Monad.List public
 open import Monad.State public
-open import Imports
+open import Imports hiding (_∧_)
 
-record LiftProp {A : Set} {M : Set → Set} {{ Mimp : Monad M }} (P : A → Set) (monadicValue : M A) : Set where
+Predicate : (A : Set) → Set₁
+Predicate A = A → Set
+
+record LiftProp {A : Set} {M : Set → Set} {{ Mimp : Monad M }} (P : Predicate A) (monadicValue : M A) : Set where
   constructor [_<>_]
   field
     monadicValueX : M (Σ[ x ∈ A ] P x)
@@ -100,10 +103,21 @@ _>>LP_ P[ma] Q[mb] = P[ma] >>=LP λ _ → Q[mb]
 
 -- }}}
 
+
 -- lift monadic value over ⊤ {{{
 
 toLP : {M : Set → Set} → {{ Mimp : Monad M }} → {A : Set} →
   (ma : M A) → LiftProp (λ _ → ⊤) ma
 toLP ma = [ fmap (\x → (x , tt)) ma <> {!!} ]
+
+-- }}}
+-- lemma about P ∧ Q {{{
+
+_∧_ : {A : Set} → Predicate A → Predicate A → Predicate A
+(P ∧ Q) a = P a × Q a
+
+_∧LP_ : ∀{M A} → {{ Mimp : Monad M }} → {ma : M A} → {P Q : Predicate A} →
+  LiftProp P ma → LiftProp Q ma → LiftProp (P ∧ Q) ma
+_∧LP_ {M} {A} ⦃ Mimp ⦄ {ma} {P} {Q} maP maQ = {!!}
 
 -- }}}

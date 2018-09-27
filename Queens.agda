@@ -101,6 +101,29 @@ queensCasual n (suc k) =
     return (q ∷ qs)
 
 
+
+-- first {{{
+
+module first where
+  -- open LiftProp renaming (_>>=LP_ to _>>=_)
+  queensCasualProven : (n : ℕ) → (k : ℕ) → LiftProp (PeacefulQueens n) (queensCasual n k)
+  queensCasualProven n zero = [ ( ([] , [ [] <> refl ] , tt , tt) ∷ []) <> refl ]
+  queensCasualProven n (suc k) =
+    let
+      _>>=_ = _>>=LP_
+      return = returnLP
+      open LiftProp.List
+    in
+    do
+      (qs , qsp) ← queensCasualProven n k
+      (q , (qp₁ , qp₂)) ← (filterLPT (λ q → qs [ n ]AreNotAttacking? q) (rangeLP n))
+      return (q ∷ qs , ({!!} , {!!} , {!!}))
+
+
+-- }}}
+
+-- suggested _∧LP_ by dominique {{{
+
 queensCasualProven : (n : ℕ) → (k : ℕ) → LiftProp (PeacefulQueens n) (queensCasual n k)
 queensCasualProven n zero = [ ( ([] , [ [] <> refl ] , tt , tt) ∷ []) <> refl ]
 queensCasualProven n (suc k) =
