@@ -1,11 +1,29 @@
 module Monad.IO where
 
-open import Imports hiding (_++_)
+-- open import Imports hiding (_++_)
 
 open import Monad public
 
+-- stdlib {{{
+
+open import Data.Nat
+open import Data.Bool hiding (_≟_; _∧_)
+open import Data.Product
+open import Data.Unit hiding (_≟_; _≤?_; _≤_)
+open import Data.Empty
+open import Data.Sum
+open import Function
+
+open import Relation.Unary using (Decidable)
+open import Relation.Nullary
+open import Relation.Binary.PropositionalEquality
+open ≡-Reasoning
+
 open import Agda.Builtin.IO public
 open import Agda.Builtin.String public
+
+-- }}}
+
 
 postulate
   putStrLn : String → IO ⊤

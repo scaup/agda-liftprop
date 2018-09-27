@@ -1,7 +1,14 @@
 module Monad.Cont where
 
 open import Monad public
-open import Imports
+-- open import Imports
+
+-- stdlib {{{
+
+open import Relation.Binary.PropositionalEquality
+open ≡-Reasoning
+
+-- }}}
 
 record Cont (C A : Set) : Set where
   field

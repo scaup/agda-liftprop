@@ -1,7 +1,23 @@
-module LiftPropExamples where
+module Dice where
 
 open import LiftProp
-open import Imports
+open import Monad
+open import Monad.List
+open import Postulates
+
+-- open import Imports
+
+-- stdlib {{{
+
+open import Function
+open import Data.List
+open import Data.Nat
+open import Data.Product
+open import Data.Bool
+open import Relation.Binary.PropositionalEquality
+open ≡-Reasoning
+
+-- }}}
 
 postulate
   x≤6∧y≤6⇒x+y≤12 : {x y : ℕ} → x ≤ 6 → y ≤ 6 → x + y ≤ 12
@@ -36,7 +52,7 @@ monadicValueX genericDieTwiceLP≤12 = do
                          (x , px) ← (monadicValueX genericDieLP≤6)
                          (y , py) ← (monadicValueX genericDieLP≤6)
                          return (x + y , x≤6∧y≤6⇒x+y≤12 px py)
-proofPPE genericDieTwiceLP≤12 = refl
+proofPPE genericDieTwiceLP≤12 = {!!}
 
 genericDieTwiceLP≤12' : LiftProp (λ a → a ≤ 12) genericDieTwice
 genericDieTwiceLP≤12' = let
@@ -176,25 +192,6 @@ somethingLPP₄ = let
 
 -- }}}
 
--- isomorphic trees after relabelling {{{
-
-open import Tree
-
-labelLP≡ : {A : Set} → (t : Tree A) → LiftProp (λ t' → t ≅ t') (label t)
-monadicValueX (labelLP≡ (leaf a)) = do
-                                       n ← fresh
-                                       return (leaf n ,  leafISO)
-proofPPE (labelLP≡ (leaf a)) = refl
-labelLP≡ (node l r) = let
-                        _>>=_ = _>>=LP_
-                        return = returnLP
-                      in
-                      do
-                        (l' , pl≡l') ← labelLP≡ l
-                        (r' , pr≡r') ← labelLP≡ r
-                        return (node l' r' , nodesISO pl≡l' pr≡r')
-
--- }}}
 
 -- #################################
 -- # Proofs without annotated bind #

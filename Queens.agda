@@ -1,6 +1,7 @@
 module Queens where
 
 open import Monad.List
+open import Monad
 open import LiftProp
 open import LiftProp.List
 
