@@ -69,19 +69,18 @@ NoDup : List ℕ → Set
 NoDup [] = ⊤
 NoDup (x ∷ xs) = x ∉ xs × NoDup xs
 
-
-PeacefulQueens : ℕ → List ℕ → Set
-PeacefulQueens n qs
-  = LiftProp (\q → q < n) qs
-  × NoDup (fmap ((λ{ (x , y) → x + y })) (addX qs))
-  × NoDup (fmap ((λ{ (x , y) → (x + n) - y })) (addX qs))
-
-
 _[_]AreNotAttacking_ : List ℕ → ℕ → ℕ → Set
 qs [ n ]AreNotAttacking q
   = q ∉ qs
   × (q + length qs) ∉ (fmap ((λ{ (x , y) → x + y })) (addX qs))
   × (length qs + n - q) ∉ (fmap ((λ{ (x , y) → (x + n) - y })) (addX qs))
+
+PeacefulQueens : ℕ → List ℕ → Set
+PeacefulQueens n [] = ⊤
+PeacefulQueens n (x ∷ qs)
+  = x < n
+  × (qs [ n ]AreNotAttacking x)
+  × (PeacefulQueens n qs)
 
 
 _[_]AreNotAttacking?_ : (qs : List ℕ) → (n : ℕ) → (q : ℕ) → Dec (qs [ n ]AreNotAttacking q)
@@ -103,23 +102,22 @@ queensCasual n (suc k) =
 
 
 -- first {{{
-
 module first where
   queensCasualProven : (n : ℕ) → (k : ℕ) → LiftProp.LiftProp (PeacefulQueens n) (queensCasual n k)
-  queensCasualProven n zero = ⟦ ( ([] , ⟦ [] <> refl ⟧ , tt , tt) ∷ []) <> refl ⟧
+  queensCasualProven n zero = ⟦ (([] , tt) ∷ []) <> refl ⟧
   queensCasualProven n (suc k) =
     let
       _>>=_ = _>>=LP_
       return = returnLP
     in
     do
-      (qs , qsp) ← queensCasualProven n k
-      (q , (qp₁ , qp₂)) ← (filterLPT (λ q → qs [ n ]AreNotAttacking? q) (rangeLP n))
-      return (q ∷ qs , ({!!} , {!!} , {!!}))
-
+      (qs , pqspf) ← queensCasualProven n k
+      (q , (pq<n , pqsnaq)) ← (filterLPT (λ q → qs [ n ]AreNotAttacking? q) (rangeLP n))
+      return (q ∷ qs , pq<n , pqsnaq , pqspf )
 
 -- }}}
 
+{-
 -- suggested _∧LP_ by dominique {{{
 
 queensCasualProven : (n : ℕ) → (k : ℕ) → LiftProp (PeacefulQueens n) (queensCasual n k)
@@ -152,3 +150,4 @@ queensCasualProven n (suc k) =
 
 
 -- }}}
+-}
