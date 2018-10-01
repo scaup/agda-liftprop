@@ -128,6 +128,33 @@ toLP : {M : Set → Set} → {{ Mimp : Monad M }} → {A : Set} →
 toLP ma = ⟦ fmap (\x → (x , tt)) ma <> {!!} ⟧
 
 -- }}}
+
+-- restricted binds {{{
+
+Res : {A B : Set} → (A → B) → (P : Predicate A) → (Σ A P → B)
+Res {A} {B} f P (a , pP) = f a
+
+_≋_ : {A B : Set} → (f g : A → B) → Set
+_≋_ {A} {B} f g = (a : A) → f a ≡ g a
+
+_>>=R_ : ∀{M A B P} → {{Mimp : Monad M}} → {ma : M A} →
+  (maLP : LiftProp P ma) →
+  (fᵣ : Σ A P → M B) → -- it is "enough" to define this restricted function
+  M B ×
+      (
+      (f : (Σ[ f ∈ (A → M B) ] (Res f P ≋ fᵣ) )) →
+      ma >>= proj₁ f ≡ monadicValueX maLP >>= fᵣ -- any function which is the same agrees upon...
+      )
+_>>=R_ {ma = ma} maLP fᵣ = monadicValueX maLP >>= fᵣ , λ{ (f , p) → sym $
+  begin (monadicValueX maLP >>= fᵣ)
+    ≡⟨ {!!} ⟩
+  {!!}
+    ≡⟨ {!!} ⟩
+  ma >>= f ∎
+
+  }
+-- }}}
+
 -- lemma about P ∧ Q {{{
 
 _∧_ : {A : Set} → Predicate A → Predicate A → Predicate A
@@ -135,6 +162,20 @@ _∧_ : {A : Set} → Predicate A → Predicate A → Predicate A
 
 _∧LP_ : ∀{M A} → {{ Mimp : Monad M }} → {ma : M A} → {P Q : Predicate A} →
   LiftProp P ma → LiftProp Q ma → LiftProp (P ∧ Q) ma
-_∧LP_ {M} {A} ⦃ Mimp ⦄ {ma} {P} {Q} maP maQ = {!!}
+monadicValueX (_∧LP_ {M} {A} ⦃ Mimp ⦄ {ma} {P} {Q} maP maQ) with (maP >>=R λ{ (x , p) → return x}) | (maQ >>=R λ{ (x , q) → return x})
+monadicValueX (_∧LP_ {M} {A} ⦃ Mimp ⦄ {ma} {P} {Q} maP maQ) | (ma' , g ) | f = {!!}
+proofPPE (_∧LP_ {M} {A} ⦃ Mimp ⦄ {ma} {P} {Q} maP maQ) = {!!}
+
+{- Argument in words {{{
+
+If LiftProp P ma, then if we were to compute ma >>= f for example, it would be sufficient to define f on Σ A P → M B.
+
+Suppose both LiftProp P ma and LiftProp Q ma, then we should be able to prove that it is sufficient to define f on Σ A (Q ∧ P) → M B.
+
+"is sufficient to define f on ..." can be formalized by >>=R..
+
+Take the special case of f = return
+
+}}} -}
 
 -- }}}
