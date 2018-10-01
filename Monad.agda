@@ -57,6 +57,15 @@ law-composition {M} {{ Mimp }} {A} {B} {C} g f ma | eq | eq2 | eq3 = begin
                                                                          (Monad._>>=_ Mimp ma (λ x → Monad.return Mimp (g x)))
                                                                          (λ x → Monad.return Mimp (f x)) ∎
 
+fmap->>= : {M : Set → Set} → {{ Mimp : Monad M }} → {A B C : Set} → (g : B → M C) → (f : A → B) → (mx : M A) → fmap f mx >>= g ≡ mx >>= (g ∘ f)
+fmap->>= g f mx = begin
+                    fmap f mx >>= g
+                  ≡⟨ assoc _ _ _ ⟩
+                    mx >>= (λ x → return (f x) >>= g)
+                  ≡⟨ cong (_>>=_ mx) (funext (leftId g ∘ f)) ⟩
+                    mx >>= (g ∘ f)
+                  ∎
+
 -- Display pragmas
 
 
