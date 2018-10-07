@@ -23,7 +23,6 @@ open import Relation.Binary.PropositionalEquality
 
 -- }}}
 
-
 -- helper functions {{{
 
 p₁ = proj₁
@@ -65,22 +64,39 @@ suc x - suc y = x - y
 
 -- }}}
 
-NoDup : List ℕ → Set
-NoDup [] = ⊤
-NoDup (x ∷ xs) = x ∉ xs × NoDup xs
+{-
+
+On a n×n chessboard, a list of length k (where each element is < n) represents a configuration of k queens, described as follows.
+The queens are placed in the k leftmost columns.
+The row of the i'th queen is determined by the i'th element in the list.
+
+[1, 3, 0] represents the three queens as follows
+
+0 Q 0 0
+0 0 0 0
+Q 0 0 0
+0 0 Q 0
+
+-}
 
 _[_]AreNotAttacking_ : List ℕ → ℕ → ℕ → Set
 qs [ n ]AreNotAttacking q
   = q ∉ qs
-  × (q + length qs) ∉ (fmap ((λ{ (x , y) → x + y })) (addX qs))
-  × (length qs + n - q) ∉ (fmap ((λ{ (x , y) → (x + n) - y })) (addX qs))
+  × newDownwardDiagonal ∉ downwardDiagonals
+  × newUpwardDiagonal ∉ upwardDiagonals
+    where
+      newDownwardDiagonal = q + length qs
+      newUpwardDiagonal = length qs + n - q
+      downwardDiagonals = fmap (λ{ (x , y) → x + y }) (addX qs)
+      upwardDiagonals = fmap (λ{ (x , y) → (x + n) - y }) (addX qs)
+
 
 PeacefulQueens : ℕ → List ℕ → Set
 PeacefulQueens n [] = ⊤
 PeacefulQueens n (x ∷ qs)
-  = x < n
+  = (PeacefulQueens n qs)
+  × x < n
   × (qs [ n ]AreNotAttacking x)
-  × (PeacefulQueens n qs)
 
 
 _[_]AreNotAttacking?_ : (qs : List ℕ) → (n : ℕ) → (q : ℕ) → Dec (qs [ n ]AreNotAttacking q)
@@ -92,62 +108,27 @@ qs [ n ]AreNotAttacking? q = f (_ ∉? _ ) (f (_ ∉? _) (_ ∉? _))
     f (no ¬p) dq = no λ x → ¬p (proj₁ x)
 
 
-queensCasual : ℕ → ℕ → List (List ℕ)
-queensCasual n zero = [] ∷ []
-queensCasual n (suc k) =
+queens : ℕ → ℕ → List (List ℕ)
+queens n zero = [] ∷ []
+queens n (suc k) =
   do
-    qs ← queensCasual n k
+    qs ← queens n k
     q ← filter (λ q → qs [ n ]AreNotAttacking? q) (range n)
     return (q ∷ qs)
 
 
--- first {{{
-module first where
-  queensCasualProven : (n : ℕ) → (k : ℕ) → LiftProp.LiftProp (PeacefulQueens n) (queensCasual n k)
-  queensCasualProven n zero = ⟦ (([] , tt) ∷ []) <> refl ⟧
-  queensCasualProven n (suc k) =
-    let
-      _>>=_ = _>>=LP_
-      return = returnLP
-    in
-    do
-      (qs , pqspf) ← queensCasualProven n k
-      (q , (pq<n , pqsnaq)) ← (filterLPT (λ q → qs [ n ]AreNotAttacking? q) (rangeLP n))
-      return (q ∷ qs , pq<n , pqsnaq , pqspf )
+_↑_ = _∧LPlist_
 
--- }}}
-
-{-
--- suggested _∧LP_ by dominique {{{
-
-queensCasualProven : (n : ℕ) → (k : ℕ) → LiftProp (PeacefulQueens n) (queensCasual n k)
-queensCasualProven n zero = ⟦ ( ([] , ⟦ [] <> refl ⟧ , tt , tt) ∷ []) <> refl ⟧
-queensCasualProven n (suc k) =
+queensProven : (n : ℕ) → (k : ℕ) → LiftProp.LiftProp (PeacefulQueens n) (queens n k)
+queensProven n zero = ⟦ (([] , tt) ∷ []) <> refl ⟧
+queensProven n (suc k) =
   let
     _>>=_ = _>>=LP_
     return = returnLP
-    open LiftProp.List
   in
   do
-    (qs , qsp) ← queensCasualProven n k
-    (q , (qp₁ , qp₂)) ← let
-                          ps = filter (λ q → qs [ n ]AreNotAttacking? q) (range n)
-                        in {!!} ∧LP {!!}
-    return (q ∷ qs , ({!!} , {!!} , {!!}))
-
-
--- }}}
-
--- custom application? {{{
-
-
-
--- }}}
-
--- queens again {{{
-
-
-
-
--- }}}
--}
+    (qs , pqspf) ← queensProven n k
+    (q , (pqsnaq , pq<n)) ← filterNewLP _ (range n)
+                          ↑ filterPreservesLP _ (rangeLP n)
+    return (q ∷ qs , pqspf , pq<n , pqsnaq)
+  
