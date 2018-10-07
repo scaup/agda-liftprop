@@ -86,4 +86,4 @@ instance
 
 range : ℕ → List ℕ
 range zero = []
-range (suc n) = range n ++ (n ∷ [])
+range (suc n) = n ∷ range n

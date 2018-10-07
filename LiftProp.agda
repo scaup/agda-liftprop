@@ -1,10 +1,6 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 module LiftProp where
 
 open import Monad
--- open import Imports hiding (_∧_)
-
 open import Postulates
 
 -- stdlib {{{
@@ -27,6 +23,9 @@ open ≡-Reasoning
 Predicate : (A : Set) → Set₁
 Predicate A = A → Set
 
+_∧_ : {A : Set} → Predicate A → Predicate A → Predicate A
+(P ∧ Q) a = P a × Q a
+
 record LiftProp {A : Set} {M : Set → Set} {{ Mimp : Monad M }} (P : Predicate A) (monadicValue : M A) : Set where
   constructor ⟦_<>_⟧
   field
@@ -40,6 +39,8 @@ open LiftProp public
 implicationLiftProp : ∀{A M} → {{ Mimp : Monad M }} → {P P' : A → Set} → {ma : M A} → ({a : A} → P a → P' a) → LiftProp P ma → LiftProp P' ma
 monadicValueX (implicationLiftProp PimpP' prop) = fmap (Data.Product.map₂ PimpP') (monadicValueX prop)
 proofPPE (implicationLiftProp PimpP' ⟦ m <> refl ⟧) = law-composition (Data.Product.map₂ PimpP') proj₁ m
+
+-- }}}
 
 -- differentBind {{{
 
@@ -82,7 +83,6 @@ _>>LP_ P[ma] Q[mb] = P[ma] >>=LP λ _ → Q[mb]
 
 -- }}}
 
-
 -- lift monadic value over ⊤ {{{
 
 toLP : {M : Set → Set} → {{ Mimp : Monad M }} → {A : Set} →
@@ -108,44 +108,36 @@ _≋_ : {A B : Set} → (f g : A → B) → Set
 _≋_ {A} {B} f g = (a : A) → f a ≡ g a
 
 _>>=R_ : ∀{M A B P} → {{Mimp : Monad M}} → {ma : M A} →
-  (maLP : LiftProp P ma) →
-  (fᵣ : Σ A P → M B) → -- it is "enough" to define this restricted function
-  M B ×
-      (
-      (f : (Σ[ f ∈ (A → M B) ] (Res f P ≋ fᵣ) )) →
-      ma >>= proj₁ f ≡ monadicValueX maLP >>= fᵣ -- any function which is the same agrees upon...
-      )
-_>>=R_ {ma = ma} maLP fᵣ = monadicValueX maLP >>= fᵣ , λ{ (f , p) → sym $
-  begin (monadicValueX maLP >>= fᵣ)
-    ≡⟨ {!!} ⟩
-  {!!}
-    ≡⟨ {!!} ⟩
-  ma >>= f ∎
+  (LiftProp P ma) →
+  (Σ A P → M B) →
+  M B
+maLP >>=R fᵣ = monadicValueX maLP >>= fᵣ
 
-  }
+restrictionValid : ∀{M A B P} → {{Mimp : Monad M}} → (ma : M A) →
+  (maLP : LiftProp P ma) →
+  (fᵣ : Σ A P → M B) →
+  (f : Σ[ f ∈ (A → M B) ] (Res f P ≋ fᵣ)) →
+  maLP >>=R fᵣ ≡ ma >>= proj₁ f
+restrictionValid ma ⟦ maX <> proof ⟧ fᵣ (f , proofR) = sym $
+  begin
+    ma >>= f
+  ≡⟨ cong (flip _>>=_ f) proof ⟩
+    fmap proj₁ maX >>= f
+  ≡⟨ fmap->>= _ _ _ ⟩
+    maX >>= (f ∘ proj₁)
+  ≡⟨ cong (_>>=_ maX) (funext proofR) ⟩
+    maX >>= fᵣ ∎
+
 -- }}}
 
--- lemma about P ∧ Q {{{
-
-_∧_ : {A : Set} → Predicate A → Predicate A → Predicate A
-(P ∧ Q) a = P a × Q a
+{- not true for general monads {{{
 
 _∧LP_ : ∀{M A} → {{ Mimp : Monad M }} → {ma : M A} → {P Q : Predicate A} →
   LiftProp P ma → LiftProp Q ma → LiftProp (P ∧ Q) ma
-monadicValueX (_∧LP_ {M} {A} ⦃ Mimp ⦄ {ma} {P} {Q} maP maQ) with (maP >>=R λ{ (x , p) → return x}) | (maQ >>=R λ{ (x , q) → return x})
-monadicValueX (_∧LP_ {M} {A} ⦃ Mimp ⦄ {ma} {P} {Q} maP maQ) | (ma' , g ) | f = {!!}
-proofPPE (_∧LP_ {M} {A} ⦃ Mimp ⦄ {ma} {P} {Q} maP maQ) = {!!}
-
-{- Argument in words {{{
-
-If LiftProp P ma, then if we were to compute ma >>= f for example, it would be sufficient to define f on Σ A P → M B.
-
-Suppose both LiftProp P ma and LiftProp Q ma, then we should be able to prove that it is sufficient to define f on Σ A (Q ∧ P) → M B.
-
-"is sufficient to define f on ..." can be formalized by >>=R..
-
-Take the special case of f = return
+_∧LP_ {M} {A} ⦃ Mimp ⦄ {ma} {P} {Q} maP maQ = {!!}
 
 }}} -}
 
--- }}}
+congLP : ∀{M A} → {{ Mimp : Monad M }} → {ma ma' : M A} → {P : Predicate A} →
+         ma ≡ ma' → LiftProp P ma → LiftProp P ma'
+congLP refl lp = lp

@@ -38,7 +38,11 @@ a ∈? (x ∷ xs) with a ≟ x
 (a ∈? (x ∷ xs)) | yes p = yes (inj₁ p)
 (a ∈? (x ∷ xs)) | no ¬p with a ∈? xs
 (a ∈? (x ∷ xs)) | no ¬p | yes p = yes (inj₂ p)
-(a ∈? (x ∷ xs)) | no ¬p | no ¬p₁ = no {!!}
+(a ∈? (x ∷ xs)) | no ¬p | no ¬p₁ = no σ
+  where
+    σ : ¬ (a ≡ x ⊎ (a ∈ xs))
+    σ (inj₁ x) = ¬p x
+    σ (inj₂ y) = ¬p₁ y
 
 decNegProp : (P : Set) → Dec P → Dec (¬ P)
 decNegProp P (yes p) = no λ z → z p
@@ -131,4 +135,35 @@ queensProven n (suc k) =
     (q , (pqsnaq , pq<n)) ← filterNewLP _ (range n)
                           ↑ filterPreservesLP _ (rangeLP n)
     return (q ∷ qs , pqspf , pq<n , pqsnaq)
-  
+
+
+-- alternative {{{
+
+NoDup : List ℕ → Set
+NoDup [] = ⊤
+NoDup (x ∷ xs) = x ∉ xs × NoDup xs
+
+QueensLivePeacefully : ℕ → List ℕ → Set
+QueensLivePeacefully n qs
+  = LiftProp (λ q → q < n) qs
+  × NoDup qs
+  × NoDup downwardDiagonals
+  × NoDup upwardDiagonals
+    where
+      downwardDiagonals = fmap (λ{ (x , y) → x + y }) (addX qs)
+      upwardDiagonals = fmap (λ{ (x , y) → (x + n) - y }) (addX qs)
+
+queensProvenPeacefully : (n : ℕ) → (k : ℕ) → LiftProp (QueensLivePeacefully n) (queens n k)
+queensProvenPeacefully n zero = {!!}
+queensProvenPeacefully n (suc k) =
+  let
+    _>>=_ = _>>=LP_
+    return = returnLP
+  in
+  do
+    (qs , qs<n , qsNoDup , qsNoDupUD , qsNoDupDD) ← queensProvenPeacefully n k
+    (q , ((pq∉qs , qNotOnDDqs , qNotOnUDqs) , pq<n)) ← filterNewLP _ (range n)
+                   ↑ filterPreservesLP _ (rangeLP n)
+    return (q ∷ qs , ((q , pq<n) ∷LP qs<n) , (pq∉qs , qsNoDup) , {!!} , {!!})
+
+-- }}}
