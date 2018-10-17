@@ -104,8 +104,9 @@ toLP ma = ⟦ fmap (\x → (x , tt)) ma <> pf ⟧
 Res : {A B : Set} → (A → B) → (P : Predicate A) → (Σ A P → B)
 Res {A} {B} f P (a , pP) = f a
 
-_≋_ : {A B : Set} → (f g : A → B) → Set
-_≋_ {A} {B} f g = (a : A) → f a ≡ g a
+-- we're working modulo functional extensionality, right?
+-- _≋_ : {A B : Set} → (f g : A → B) → Set
+-- _≋_ {A} {B} f g = (a : A) → f a ≡ g a
 
 _>>=R_ : ∀{M A B P} → {{Mimp : Monad M}} → {ma : M A} →
   (LiftProp P ma) →
@@ -116,7 +117,7 @@ maLP >>=R fᵣ = monadicValueX maLP >>= fᵣ
 restrictionValid : ∀{M A B P} → {{Mimp : Monad M}} → (ma : M A) →
   (maLP : LiftProp P ma) →
   (fᵣ : Σ A P → M B) →
-  (f : Σ[ f ∈ (A → M B) ] (Res f P ≋ fᵣ)) →
+  (f : Σ[ f ∈ (A → M B) ] (Res f P ≡ fᵣ)) →
   maLP >>=R fᵣ ≡ ma >>= proj₁ f
 restrictionValid ma ⟦ maX <> proof ⟧ fᵣ (f , proofR) = sym $
   begin
@@ -125,7 +126,7 @@ restrictionValid ma ⟦ maX <> proof ⟧ fᵣ (f , proofR) = sym $
     fmap proj₁ maX >>= f
   ≡⟨ fmap->>= _ _ _ ⟩
     maX >>= (f ∘ proj₁)
-  ≡⟨ cong (_>>=_ maX) (funext proofR) ⟩
+  ≡⟨ cong (_>>=_ maX) proofR ⟩
     maX >>= fᵣ ∎
 
 -- }}}
