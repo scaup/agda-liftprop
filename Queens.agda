@@ -124,7 +124,7 @@ queens n (suc k) =
 _↑_ = _∧LPlist_
 
 queensProven : (n : ℕ) → (k : ℕ) → LiftProp.LiftProp (PeacefulQueens n) (queens n k)
-queensProven n zero = ⟦ (([] , tt) ∷ []) <> refl ⟧
+queensProven n zero = returnLP′ tt
 queensProven n (suc k) =
   let
     _>>=_ = _>>=LP_

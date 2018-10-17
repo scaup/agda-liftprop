@@ -50,6 +50,11 @@ returnLP : {M : Set → Set} → {{ Mimp : Monad M }} →
 monadicValueX (returnLP aX) = return aX
 proofPPE (returnLP aX) = sym (leftId _ _)
 
+returnLP′ : {M : Set → Set} → {{ Mimp : Monad M }} →
+            {A : Set} → {P : A → Set} →
+            {a : A} → P a → LiftProp {{Mimp}} P (return a)
+returnLP′ p = returnLP (_ , p)
+
 _>>=LP_ : {M : Set → Set} → {{ Mimp : Monad M }} →
          {A B : Set} → {P : A → Set} → {Q : B → Set} →
          {ma : M A} → {f : A → M B} →
