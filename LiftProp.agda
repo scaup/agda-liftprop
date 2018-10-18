@@ -6,7 +6,7 @@ open import Postulates
 -- stdlib {{{
 
 open import Data.Nat
-open import Data.Bool hiding (_≟_; _∧_)
+open import Data.Bool hiding (_≟_; _∧_; _∨_)
 open import Data.Product
 open import Data.Unit hiding (_≟_; _≤?_; _≤_)
 open import Data.Empty
@@ -23,6 +23,9 @@ open ≡-Reasoning
 Predicate : (A : Set) → Set₁
 Predicate A = A → Set
 
+_∨_ : {A : Set} → Predicate A → Predicate A → Predicate A
+(P ∨ Q) a = P a ⊎ Q a
+
 _∧_ : {A : Set} → Predicate A → Predicate A → Predicate A
 (P ∧ Q) a = P a × Q a
 
@@ -33,6 +36,7 @@ record LiftProp {A : Set} {M : Set → Set} {{ Mimp : Monad M }} (P : Predicate 
     proofPPE : monadicValue ≡ fmap proj₁ monadicValueX
 
 open LiftProp public
+
 
 -- Trivial property {{{
 
@@ -143,6 +147,13 @@ _∧LP_ : ∀{M A} → {{ Mimp : Monad M }} → {ma : M A} → {P Q : Predicate 
 _∧LP_ {M} {A} ⦃ Mimp ⦄ {ma} {P} {Q} maP maQ = {!!}
 
 }}} -}
+
+LPOr : ∀{M A} → {{ Mimp : Monad M }} → {ma : M A} → {P Q : Predicate A} →
+  LiftProp P ma ⊎ LiftProp Q ma → LiftProp (P ∨ Q) ma
+LPOr (inj₁ maLP) = implicationLiftProp (λ x → inj₁ x) maLP
+LPOr (inj₂ maLQ) = implicationLiftProp (λ x → inj₂ x) maLQ
+
+
 
 congLP : ∀{M A} → {{ Mimp : Monad M }} → {ma ma' : M A} → {P : Predicate A} →
          ma ≡ ma' → LiftProp P ma → LiftProp P ma'
