@@ -8,11 +8,14 @@ open import LiftProp
 
 open import Data.List
 open import Data.Nat
+open import Data.Unit hiding (_≤_)
 open import Data.Product
 open import Data.Bool
 open import Relation.Binary.PropositionalEquality
 
 -- }}}
+
+module Tree where
 
 data Tree (A : Set) : Set where
   leaf : (a : A) → Tree A
@@ -21,7 +24,8 @@ data Tree (A : Set) : Set where
 -- relabel tree {{{
 
 fresh : State ℕ ℕ
-runState fresh n = n , suc n -- returning state, and modifying it plus 1 (A × S)
+fresh = record { runState = λ n → n , suc n }
+-- returning state, and modifying it plus 1 (A × S)
 
 label : {A : Set} → Tree A → State ℕ (Tree ℕ)
 label (leaf a) = do
@@ -55,18 +59,20 @@ exTree' = node (node (leaf 3) (leaf 9)) (node (node (leaf 9) (node (leaf 9) (lea
 
 data _≅_ {A B : Set} : (ta : Tree A) → (tb : Tree B) → Set where
   leafISO : {a : A} → {b : B} → leaf a ≅ leaf b
-  nodesISO : {tal tar : Tree A} → {tbl tbr : Tree B} → tal ≅ tbl → tar ≅ tbr → node tal tar ≅ node tbl tbr
+  nodesISO : {tal tar : Tree A} → {tbl tbr : Tree B} →
+             tal ≅ tbl → tar ≅ tbr →
+             node tal tar ≅ node tbl tbr
 
-pro : exTree' ≅ exTree
-pro = nodesISO (nodesISO leafISO leafISO) (nodesISO (nodesISO leafISO (nodesISO leafISO leafISO)) leafISO)
 
 -- isomorphic trees after relabelling {{{
+module LabelIsomorphic where
 
 labelLP≡ : {A : Set} → (t : Tree A) → LiftProp (λ t' → t ≅ t') (label t)
-monadicValueX (labelLP≡ (leaf a)) = do
-                                       n ← fresh
-                                       return (leaf n ,  leafISO)
-proofPPE (labelLP≡ (leaf a)) = refl
+labelLP≡ (leaf a) = ⟦ labelLeafWithProof <> refl ⟧
+  where
+    labelLeafWithProof = do
+                           n ← fresh
+                           return (leaf n ,  leafISO)
 labelLP≡ (node l r) = let
                         _>>=_ = _>>=LP_
                         return = returnLP
@@ -75,32 +81,94 @@ labelLP≡ (node l r) = let
                         (l' , pl≡l') ← labelLP≡ l
                         (r' , pr≡r') ← labelLP≡ r
                         return (node l' r' , nodesISO pl≡l' pr≡r')
+-- }}}
+
+-- unique labels {{{
+
+module LabelUnique where
+
+
+record Proof (t : Tree ℕ) (n₁ : ℕ) (n₂ : ℕ) : Set where
+  field
+    -- n₂NotZero : n₂ ≠ 0
+    initial≤final : n₁ ≤ n₂
+    -- proofLower : n₁ IsLowerBoundFor t
+    -- proofUpper : (pred n₂) IsUpperBoundFor t
+    proofNoDups : {!!} t
+
+open Proof public
+
+
+-- manually (i.e. first defining extended version...) {{{
+
+open import Monad.StateHoare
+
+labelX : {A : Set} → (t : Tree A) → StateHoare ℕ (Tree ℕ) λ x x₁ x₂ → ⊤
+labelX (leaf a) =
+  let
+    _>>=_ = _>>=StateHoare_
+    return = returnStateHoare
+  in
+  (
+  do
+    n ← toStateHoare (fresh)
+    return (leaf n)
+  )
+  concluding
+    λ x → tt
+labelX (node l r) =
+  let
+    _>>=_ = _>>=StateHoare_
+    return = returnStateHoare
+  in
+  (
+  do
+    l' ← (labelX l)
+    r' ← (labelX r)
+    return (node l' r')
+  )
+  concluding
+    λ x → tt
+
+
+proof : {A : Set} → (t : Tree A) → label t ≡ forget (labelX t)
+proof (leaf a) = refl
+proof (node t t₁) = {!!}
 
 -- }}}
 
--- suggestion to specialize LiftProp to state with hoare state {{{
+-- with lifted operators; retro-actively {{{
 
-record StateDX (S : Set) (A : Set) (P : A → S → S → Set) : Set where
-  field
-    runStateDX : (s₁ : S) → Σ (A × S) λ{(a , s₂) → P a s₁ s₂}
+open import LiftProp.StateHoare
 
-open StateDX
+labelLPNoDup : {A : Set} → (t : Tree A) → LiftPropStateHoare Proof (label t)
+labelLPNoDup (leaf a) =
+  let
+    _>>=_ = _>>=StateHoareLP_
+    return = returnStateHoareLP
+  in
+  (
+  do
+    n ← toStateHoareLP fresh
+    return (leaf n)
+  )
+  ⇒ λ{ (n , s₁ , refl , refl , refl) → {!!}}
 
-
-forgetDX : ∀{S A P} → StateDX S A P → State S A
-runState (forgetDX record { runStateDX = k }) s = proj₁ (k s)
-
-
-record LiftPropStateD {A S : Set} (P : A → S → S → Set) (stateComputation : State S A) : Set where
-  constructor _,_
-  field
-    stateComputationDX : StateDX S A P
-    proofPPE : stateComputation ≡ forgetDX stateComputationDX
-
-labelLPUniqueLabels : {A : Set} → (t : Tree A) → LiftPropStateD {!!} (label t)
-labelLPUniqueLabels t = {!!}
-
-_>>=LPDS_ : {!!}
-_>>=LPDS_ = {!!}
+labelLPNoDup (node l r) =
+  let
+    _>>=_ = _>>=StateHoareLP_
+    return = returnStateHoareLP
+  in
+  (
+  do
+    l' ← labelLPNoDup l
+    r' ← labelLPNoDup r
+    return (node l' r')
+  )
+  ⇒ λ{ (l' , s₁ , pl' , r' , s₂ , pr' ) → {!!}}
 
 -- }}}
+
+-- }}}
+
+
