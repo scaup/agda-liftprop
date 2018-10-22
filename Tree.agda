@@ -101,7 +101,7 @@ open Proof public
 
 -- manually (i.e. first defining extended version...) {{{
 
-open import Monad.StateHoare
+open import Hoare.Monad
 
 labelX : {A : Set} → (t : Tree A) → StateHoare ℕ (Tree ℕ) λ x x₁ x₂ → ⊤
 labelX (leaf a) =
@@ -139,7 +139,7 @@ proof (node t t₁) = {!!}
 
 -- with lifted operators; retro-actively {{{
 
-open import LiftProp.StateHoare
+open import Hoare.LiftProp
 
 labelLPNoDup : {A : Set} → (t : Tree A) → LiftPropStateHoare Proof (label t)
 labelLPNoDup (leaf a) =

@@ -1,10 +1,10 @@
--- {-# OPTIONS --allow-unsolved-metas #-}
+{-# OPTIONS --allow-unsolved-metas #-}
 
-module LiftProp.StateHoare where
+module Hoare.LiftProp where
 
 open import LiftProp
 open import Monad.State
-open import Monad.StateHoare
+open import Hoare.Monad
 open import Postulates
 
 -- stdlib {{{

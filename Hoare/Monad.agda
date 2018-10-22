@@ -1,4 +1,4 @@
-module Monad.StateHoare where
+module Hoare.Monad where
 
 open import Monad.State
 
