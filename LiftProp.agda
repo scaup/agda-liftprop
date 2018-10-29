@@ -1,6 +1,9 @@
 module LiftProp where
 
 open import Monad
+open import Functor
+open import Monad2Functor
+
 open import Postulates
 
 -- stdlib {{{
@@ -29,10 +32,10 @@ _∨_ : {A : Set} → Predicate A → Predicate A → Predicate A
 _∧_ : {A : Set} → Predicate A → Predicate A → Predicate A
 (P ∧ Q) a = P a × Q a
 
-record LiftProp {A : Set} {M : Set → Set} {{ Mimp : Monad M }} (P : Predicate A) (monadicValue : M A) : Set where
+record LiftProp {A : Set} {F : Set → Set} {{ Fimp : Functor F }} (P : Predicate A) (monadicValue : F A) : Set where
   constructor ⟦_<>_⟧
   field
-    monadicValueX : M (Σ[ x ∈ A ] P x)
+    monadicValueX : F (Σ[ x ∈ A ] P x)
     proofPPE : monadicValue ≡ fmap proj₁ monadicValueX
 
 open LiftProp public
@@ -42,7 +45,7 @@ open LiftProp public
 
 implicationLiftProp : ∀{A M} → {{ Mimp : Monad M }} → {P P' : A → Set} → {ma : M A} → ({a : A} → P a → P' a) → LiftProp P ma → LiftProp P' ma
 monadicValueX (implicationLiftProp PimpP' prop) = fmap (Data.Product.map₂ PimpP') (monadicValueX prop)
-proofPPE (implicationLiftProp PimpP' ⟦ m <> refl ⟧) = law-composition (Data.Product.map₂ PimpP') proj₁ m
+proofPPE (implicationLiftProp PimpP' ⟦ m <> refl ⟧) = composition (Data.Product.map₂ PimpP') proj₁ m
 
 -- }}}
 
@@ -50,13 +53,13 @@ proofPPE (implicationLiftProp PimpP' ⟦ m <> refl ⟧) = law-composition (Data.
 
 returnLP : {M : Set → Set} → {{ Mimp : Monad M }} →
            {A : Set} → {P : A → Set} →
-           (aX : Σ[ a ∈ A ] (P a)) → LiftProp {A} {M} {{Mimp}}  P (return (proj₁ aX))
+           (aX : Σ[ a ∈ A ] (P a)) → LiftProp {A} {M} P (return (proj₁ aX))
 monadicValueX (returnLP aX) = return aX
 proofPPE (returnLP aX) = sym (leftId _ _)
 
 returnLP′ : {M : Set → Set} → {{ Mimp : Monad M }} →
             {A : Set} → {P : A → Set} →
-            {a : A} → P a → LiftProp {{Mimp}} P (return a)
+            {a : A} → P a → LiftProp {{Ω {M}}} P (return a)
 returnLP′ p = returnLP (_ , p)
 
 _>>=LP_ : {M : Set → Set} → {{ Mimp : Monad M }} →
@@ -102,7 +105,7 @@ toLP ma = ⟦ fmap (\x → (x , tt)) ma <> pf ⟧
                ma
              ≡⟨ sym $ rightId ma ⟩
                fmap (λ x → x) ma
-             ≡⟨ law-composition (λ x → x , tt) proj₁ ma ⟩
+             ≡⟨ composition (λ x → x , tt) proj₁ ma ⟩
                fmap proj₁ (fmap (λ x → x , tt) ma)
              ∎
 

@@ -7,6 +7,8 @@ module LiftProp.List where
 open import Function
 open import LiftProp
 open import Monad.List
+open import Monad2Functor
+open import Functor
 open import Data.List
 open import Data.Product
 open import Data.Nat
