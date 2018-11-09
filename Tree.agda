@@ -1,6 +1,8 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
 open import Monad
+open import Monad2Functor
+open import Functor
 open import Monad.State
 open import LiftProp
 

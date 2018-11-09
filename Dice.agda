@@ -3,6 +3,8 @@ module Dice where
 open import LiftProp
 open import Monad
 open import Monad.List
+open import Monad2Functor
+open import Functor
 open import Postulates
 
 -- open import Imports

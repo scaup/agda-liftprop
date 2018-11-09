@@ -2,6 +2,8 @@ module Queens where
 
 open import Monad.List
 open import Monad
+open import Functor
+open import Monad2Functor
 open import LiftProp
 open import LiftProp.List
 
