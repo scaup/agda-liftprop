@@ -70,13 +70,13 @@ monadicValueX (labelLP≡ (leaf a)) = do
                                        return (leaf n ,  leafISO)
 proofPPE (labelLP≡ (leaf a)) = refl
 labelLP≡ (node l r) = let
-                        _>>=_ = _>>=LP_
-                        return = returnLP
+                        _>>=_ = _>>=LP'_
+                        return = returnLP'
                       in
                       do
-                        (l' , pl≡l') ← labelLP≡ l
-                        (r' , pr≡r') ← labelLP≡ r
-                        return (node l' r' , nodesISO pl≡l' pr≡r')
+                        pl≡l' ← labelLP≡ l
+                        pr≡r' ← labelLP≡ r
+                        return (nodesISO pl≡l' pr≡r')
 
 -- }}}
 

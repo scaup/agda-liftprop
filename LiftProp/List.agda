@@ -68,6 +68,10 @@ filterNewLP {A} {P} P? (x ∷ as) with P? x
 filterNewLP {A} {P} P? (x ∷ as) | yes p = (x , p) ∷LP filterNewLP P? as
 filterNewLP {A} {P} P? (x ∷ as) | no ¬p = filterNewLP P? as
 
+filterNewLP' : {A : Set} → {P : A → Set} →
+  {P? : Decidable P} → (as : List A) → LiftProp P (filter P? as)
+filterNewLP' = filterNewLP _
+
 filterPreservesLP : {A : Set} → {P : A → Set} → {Q : A → Set} → {as : List A}
   (Q? : Decidable Q) → LiftProp P as → LiftProp P (Data.List.filter Q? as)
 filterPreservesLP {A} {P} {Q} {[]} Q? ⟦ monadicValueX₁ <> proofPPE₁ ⟧ = ⟦ monadicValueX₁ <> proofPPE₁ ⟧
@@ -87,3 +91,7 @@ filterPreservesLP {A} {P} {Q} {x ∷ as} Q? ⟦ (.x , p₁) ∷ m <> p ⟧ | no 
     θ | yes p' with ¬p p'
     θ | yes p' | ()
     θ | no ¬p' = refl
+
+filterPreservesLP' : {A : Set} → {P : A → Set} → {Q : A → Set} → {as : List A}
+  {Q? : Decidable Q} → LiftProp P as → LiftProp P (Data.List.filter Q? as)
+filterPreservesLP' = filterPreservesLP _

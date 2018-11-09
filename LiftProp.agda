@@ -1,5 +1,6 @@
 module LiftProp where
 
+
 open import Monad
 open import Functor
 open import Monad2Functor
@@ -57,10 +58,10 @@ returnLP : {M : Set → Set} → {{ Mimp : Monad M }} →
 monadicValueX (returnLP aX) = return aX
 proofPPE (returnLP aX) = sym (leftId _ _)
 
-returnLP′ : {M : Set → Set} → {{ Mimp : Monad M }} →
+returnLP' : {M : Set → Set} → {{ Mimp : Monad M }} →
             {A : Set} → {P : A → Set} →
             {a : A} → P a → LiftProp {{Ω {M}}} P (return a)
-returnLP′ p = returnLP (_ , p)
+returnLP' p = returnLP (_ , p)
 
 _>>=LP_ : {M : Set → Set} → {{ Mimp : Monad M }} →
          {A B : Set} → {P : A → Set} → {Q : B → Set} →
@@ -85,12 +86,19 @@ proofPPE (_>>=LP_ {M} {{Mimp}} {A} {B} {P} {Q} {ma} {f} ⟦ maX <> maXPPE ⟧ fl
                      fmap proj₁ (do y ← maX
                                     monadicValueX (flp y)) ∎
 
-
 _>>LP_ : {M : Set → Set} → {{ Mimp : Monad M }} →
          {A B : Set} → {P : A → Set} → {Q : B → Set} →
          {ma : M A} → {mb : M B} →
               (P[ma] : LiftProp P ma) → (Q[mb] : LiftProp Q mb) → LiftProp Q (ma >> mb)
 _>>LP_ P[ma] Q[mb] = P[ma] >>=LP λ _ → Q[mb]
+
+_>>=LP'_ : {M : Set → Set} → {{ Mimp : Monad M }} →
+           {A B : Set} → {P : A → Set} → {Q : B → Set} →
+           {ma : M A} → {f : A → M B} →
+              (P[ma] : LiftProp P ma) →
+              (flp : {a : A} → (P a) → LiftProp Q (f a)) →
+                LiftProp Q (ma >>= f)
+lp >>=LP' f = lp >>=LP λ{ (a , p) → f p}
 
 
 -- }}}

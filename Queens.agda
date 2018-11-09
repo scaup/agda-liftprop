@@ -126,17 +126,34 @@ queens n (suc k) =
 _↑_ = _∧LPlist_
 
 queensProven : (n : ℕ) → (k : ℕ) → LiftProp.LiftProp (PeacefulQueens n) (queens n k)
-queensProven n zero = returnLP′ tt
+queensProven n zero = returnLP' tt
 queensProven n (suc k) =
   let
     _>>=_ = _>>=LP_
     return = returnLP
   in
   do
-    (qs , pqspf) ← queensProven n k
-    (q , (pqsnaq , pq<n)) ← filterNewLP _ (range n)
-                          ↑ filterPreservesLP _ (rangeLP n)
-    return (q ∷ qs , pqspf , pq<n , pqsnaq)
+    (_ , pqspf) ← queensProven n k
+    (_ , (pqsnaq , pq<n)) ← filterNewLP _ (range n)
+                          ∧← filterPreservesLP _ (rangeLP n)
+    return (_ , pqspf , pq<n , pqsnaq)
+
+filteredProperty = filterNewLP'
+filterPreservesOldProperty = filterPreservesLP'
+
+queensProven' : (n : ℕ) → (k : ℕ) → LiftProp.LiftProp (PeacefulQueens n) (queens n k)
+queensProven' n zero = returnLP' tt
+queensProven' n (suc k) =
+  let
+    _>>=_ = _>>=LP'_
+    return = returnLP'
+  in
+  do
+    pqspf ← queensProven' n k
+    (pqsnaq , pq<n) ← filteredProperty (range n)
+                        ∧LP
+                      filterPreservesOldProperty (rangeLP n)
+    return (pqspf , pq<n , pqsnaq)
 
 
 -- alternative {{{
