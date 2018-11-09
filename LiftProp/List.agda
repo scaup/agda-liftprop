@@ -50,6 +50,7 @@ rangeLP = {!!}
             h z≤n = z≤n
             h (s≤s e) = s≤s (h e)
 
+{-
 
 _∧LPlist_ : {A : Set} → {as : List A} → {P Q : Predicate A} →
   LiftProp P as → LiftProp Q as → LiftProp (P ∧ Q) as
@@ -59,8 +60,7 @@ _∧LPlist_ {as = x ∷ as} ⟦ x₁ ∷ a <> proofPPE₁ ⟧ ⟦ [] <> () ⟧
 _∧LPlist_ {as = x ∷ as} ⟦ x₁ ∷ a <> proofPPE₁ ⟧ ⟦ x₂ ∷ c <> proofPPE₂ ⟧ with α proofPPE₁ | α proofPPE₂
 _∧LPlist_ {_} {x ∷ as} ⟦ (.x , px) ∷ xps <> proofPPE₁ ⟧ ⟦ (.x , qx) ∷ xqs <> proofPPE₂ ⟧ | refl , snd | refl , snd₁ = (x , px , qx) ∷LP (⟦ xps <> snd ⟧ ∧LPlist ⟦ xqs <> snd₁ ⟧)
 
-
-
+-}
 filterNewLP : {A : Set} → {P : A → Set} →
   (P? : Decidable P) → (as : List A) → LiftProp P (filter P? as)
 filterNewLP {A} {P} P? [] = ⟦ [] <> refl ⟧

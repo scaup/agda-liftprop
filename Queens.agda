@@ -6,6 +6,7 @@ open import Functor
 open import Monad2Functor
 open import LiftProp
 open import LiftProp.List
+open import MonadLPAnd
 
 
 -- stdlib {{{
@@ -123,7 +124,7 @@ queens n (suc k) =
     return (q ∷ qs)
 
 
-_↑_ = _∧LPlist_
+_∧←_ = _∧LP_
 
 queensProven : (n : ℕ) → (k : ℕ) → LiftProp.LiftProp (PeacefulQueens n) (queens n k)
 queensProven n zero = returnLP' tt
@@ -182,7 +183,7 @@ queensProvenPeacefully n (suc k) =
   do
     (qs , qs<n , qsNoDup , qsNoDupUD , qsNoDupDD) ← queensProvenPeacefully n k
     (q , ((pq∉qs , qNotOnDDqs , qNotOnUDqs) , pq<n)) ← filterNewLP _ (range n)
-                   ↑ filterPreservesLP _ (rangeLP n)
+                   ∧← filterPreservesLP _ (rangeLP n)
     return (q ∷ qs , ((q , pq<n) ∷LP qs<n) , (pq∉qs , qsNoDup) , {!!} , {!!})
 
 -- }}}

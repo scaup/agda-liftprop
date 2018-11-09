@@ -41,6 +41,8 @@ record LiftProp {A : Set} {F : Set → Set} {{ Fimp : Functor F }} (P : Predicat
 
 open LiftProp public
 
+Lifted = LiftProp
+
 
 -- Trivial property {{{
 
