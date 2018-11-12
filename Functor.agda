@@ -29,3 +29,7 @@ record Functor (F : Set → Set) : Set₁ where
 
 open Functor {{...}} public
 
+{-# DISPLAY Functor.fmap imp a = fmap a #-}
+-- {-# DISPLAY Monad.return i a = return a #-}
+-- {-# DISPLAY Monad.return i = return #-} -- f ∘ return
+

@@ -41,7 +41,7 @@ record LiftProp {A : Set} {F : Set → Set} {{ Fimp : Functor F }} (P : Predicat
 
 open LiftProp public
 
-Lifted = LiftProp
+Lift = LiftProp
 
 
 -- Trivial property {{{
@@ -62,7 +62,7 @@ proofPPE (returnLP aX) = sym (leftId _ _)
 
 returnLP' : {M : Set → Set} → {{ Mimp : Monad M }} →
             {A : Set} → {P : A → Set} →
-            {a : A} → P a → LiftProp {{Ω {M}}} P (return a)
+            {a : A} → P a → LiftProp {{Ω {M} }} P (return a)
 returnLP' p = returnLP (_ , p)
 
 _>>=LP_ : {M : Set → Set} → {{ Mimp : Monad M }} →
@@ -102,6 +102,25 @@ _>>=LP'_ : {M : Set → Set} → {{ Mimp : Monad M }} →
                 LiftProp Q (ma >>= f)
 lp >>=LP' f = lp >>=LP λ{ (a , p) → f p}
 
+_>>LP'_ : {M : Set → Set} → {{ Mimp : Monad M }} →
+          {A B : Set} → {P : A → Set} → {Q : B → Set} →
+          {ma : M A} → {f : A → M B} →
+          (P[ma] : LiftProp P ma) →
+          (flp : {a : A} → LiftProp Q (f a)) →
+          LiftProp Q (ma >>= f)
+P[ma] >>LP' f = P[ma] >>=LP' λ _ → f
+
+noClaim : {F : Set → Set} → {{ Fimp : Functor F }} →
+          {A : Set} → {fa : F A} →
+          LiftProp (const ⊤) fa
+noClaim {F} {{ Fimp }} {fa = fa} = ⟦ fmap (λ a → a , tt) fa <> sym proof ⟧
+  where
+    proof = begin
+              fmap proj₁ (fmap (λ a → a , tt) fa)
+            ≡⟨ sym $ composition _ _ _ ⟩
+              fmap id fa
+            ≡⟨ unit ⟩
+              fa ∎
 
 -- }}}
 
