@@ -12,6 +12,7 @@ open import Functor
 open import Data.List
 open import Data.Product
 open import Data.Nat
+open import Data.Nat.Properties
 open import Relation.Unary using (Decidable)
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
