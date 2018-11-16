@@ -21,6 +21,8 @@ open import Relation.Binary.PropositionalEquality
 α : {A : Set} → {xs ys : List A} → {x y : A} → x ∷ xs ≡ y ∷ ys → x ≡ y × xs ≡ ys
 α refl = refl , refl
 
+LP-[] : ∀ {A : Set} {P : A → Set} → LiftProp {A} {List} P []
+LP-[] = ⟦ [] <> refl ⟧
 
 _∷LP_ : {A : Set} → {P : Predicate A} → {xs : List A} →
   (ap : Σ A P) → LiftProp P xs → LiftProp P (proj₁ ap ∷ xs)
