@@ -38,19 +38,8 @@ _++LP_ {A} {P} {x₁ ∷ xs} {ys} ⟦ (.x₁ , p) ∷ xsX <> proof₁ ⟧ lpys |
 
 
 rangeLP : (n : ℕ) → LiftProp (λ x → x < n) (range n)
-rangeLP = {!!}
-  where
-    f : (n : ℕ) → (m : Σ[ m ∈ ℕ ] m ≤ n) → LiftProp (λ x → x < n) (range (proj₁ m))
-    f n (zero , snd) = ⟦ [] <> refl ⟧
-    f zero (suc m , ())
-    f (suc n) (suc m , s≤s snd) = (m , (s≤s snd)) ∷LP f (suc n) (m , {!g ?!}) --maybe try with _≤'_ ?
-      where
-        g : {m n : ℕ} → suc m ≤ n → m ≤ n
-        g {m} {.(suc _)} (s≤s e) = h e
-          where
-            h : {x y : ℕ} → x ≤ y → x ≤ suc y
-            h z≤n = z≤n
-            h (s≤s e) = s≤s (h e)
+rangeLP zero = LP-[]
+rangeLP (suc n) = (n , ≤-refl) ∷LP implicationLiftProp ≤-step (rangeLP n)
 
 {-
 
