@@ -6,6 +6,7 @@ open import Monad2Functor
 open import Functor
 open import Data.Product
 
+open import Function
 
 postulate
   M : Set → Set
@@ -106,10 +107,43 @@ sillyAbstract : List ℕ
 sillyAbstract = repetitionsAbstract >>= λ r → (repeat r 8)
 
 sillyAbstractProof : Lift IsEven sillyAbstract
-sillyAbstractProof = noClaim >>LP' repeatLP (even8)
+sillyAbstractProof = noClaim {fa = repetitionsAbstract} >>LP' repeatLP (even8)
 
 sillyConcreteProof : Lift IsEven sillyConcrete
-sillyConcreteProof = noClaim {fa = repetitionsConcrete} >>LP' repeatLP even8
+sillyConcreteProof = noClaim {fa = repetitionsConcrete} >>LP' λ {a} → repeatLP {a} even8
 
-sillyConcreteProofObviouslywrong : Lift IsEven sillyConcrete
-sillyConcreteProofObviouslywrong = noClaim {fa = 9 ∷ []} >>LP' repeatLP even8
+--sillyConcreteProofObviouslywrong : Lift IsEven sillyConcrete
+--sillyConcreteProofObviouslywrong = noClaim {fa = 9 ∷ []} >>LP' λ {a} → repeatLP {a} even8
+
+-----
+
+data MonadSyntax (M : Set → Set) {{mM : Monad M}} : (A : Set) → Set₁ where
+  [return] : ∀ {A} → A → MonadSyntax M A
+  _[>>=]_ : ∀ {A B} → MonadSyntax M A → (A → MonadSyntax M B) → MonadSyntax M B
+  wrap[_] : ∀ {A} → M A → MonadSyntax M A
+
+data LPSyntax {M : Set → Set} {{mM : Monad M}} : {A : Set} (P : A → Set) → MonadSyntax M A → Set₁ where
+  [returnLP] : ∀{A P} {a : A} → P a → LPSyntax P ([return] a)
+  _[>>=LP]_ : ∀{A B P Q} {ma : MonadSyntax M A} (pma : LPSyntax P ma)
+              {f : A → MonadSyntax M B} (pf : {a : A} → P a → LPSyntax Q (f a))
+              → LPSyntax Q (ma [>>=] f)
+  wrapLP[_] : ∀{A P} {ma : M A} → Lift P ma → LPSyntax P wrap[ ma ]
+
+digest : ∀{M} {A} → {{mM : Monad M}} → MonadSyntax M A → M A
+digest ([return] x) = return x
+digest (ma [>>=] f) = digest ma >>= (digest ∘ f)
+digest wrap[ ma ] = ma
+
+digestLP : ∀{M A P} → {{mM : Monad M}} → {ma : MonadSyntax M A} → LPSyntax P ma → Lift P (digest ma)
+digestLP ([returnLP] pa) = returnLP (_ , pa)
+digestLP (pma [>>=LP] pf) = digestLP pma >>=LP λ {(a , pa) → digestLP (pf pa)}
+digestLP wrapLP[ pma ] = pma
+
+[sillyConcrete] : MonadSyntax List ℕ
+[sillyConcrete] = wrap[ repetitionsConcrete ] [>>=] λ r → wrap[ repeat r 8 ]
+
+[sillyConcreteProof] : LPSyntax IsEven [sillyConcrete]
+[sillyConcreteProof] = wrapLP[ noClaim ] [>>=LP] λ _ → wrapLP[ repeatLP even8 ]
+
+sillyConcreteProof' : Lift IsEven sillyConcrete
+sillyConcreteProof' = digestLP [sillyConcreteProof]
