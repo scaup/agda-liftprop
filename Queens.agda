@@ -116,7 +116,7 @@ qs [ n ]AreNotAttacking? q = f (_ ∉? _ ) (f (_ ∉? _) (_ ∉? _))
 
 
 queens : ℕ → ℕ → List (List ℕ)
-queens n zero = [] ∷ []
+queens n zero = return []
 queens n (suc k) =
   do
     qs ← queens n k
@@ -174,7 +174,7 @@ QueensLivePeacefully n qs
       upwardDiagonals = fmap (λ{ (x , y) → (x + n) - y }) (addX qs)
 
 queensProvenPeacefully : (n : ℕ) → (k : ℕ) → LiftProp (QueensLivePeacefully n) (queens n k)
-queensProvenPeacefully n zero = {!!}
+queensProvenPeacefully n zero = returnLP' (LP-[] , tt , tt , tt)
 queensProvenPeacefully n (suc k) =
   let
     _>>=_ = _>>=LP_

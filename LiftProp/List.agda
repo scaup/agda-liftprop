@@ -12,6 +12,7 @@ open import Functor
 open import Data.List
 open import Data.Product
 open import Data.Nat
+open import Data.Nat.Properties
 open import Relation.Unary using (Decidable)
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
@@ -21,6 +22,8 @@ open import Relation.Binary.PropositionalEquality
 α : {A : Set} → {xs ys : List A} → {x y : A} → x ∷ xs ≡ y ∷ ys → x ≡ y × xs ≡ ys
 α refl = refl , refl
 
+LP-[] : ∀ {A : Set} {P : A → Set} → LiftProp {A} {List} P []
+LP-[] = ⟦ [] <> refl ⟧
 
 _∷LP_ : {A : Set} → {P : Predicate A} → {xs : List A} →
   (ap : Σ A P) → LiftProp P xs → LiftProp P (proj₁ ap ∷ xs)
@@ -36,19 +39,8 @@ _++LP_ {A} {P} {x₁ ∷ xs} {ys} ⟦ (.x₁ , p) ∷ xsX <> proof₁ ⟧ lpys |
 
 
 rangeLP : (n : ℕ) → LiftProp (λ x → x < n) (range n)
-rangeLP = {!!}
-  where
-    f : (n : ℕ) → (m : Σ[ m ∈ ℕ ] m ≤ n) → LiftProp (λ x → x < n) (range (proj₁ m))
-    f n (zero , snd) = ⟦ [] <> refl ⟧
-    f zero (suc m , ())
-    f (suc n) (suc m , s≤s snd) = (m , (s≤s snd)) ∷LP f (suc n) (m , {!g ?!}) --maybe try with _≤'_ ?
-      where
-        g : {m n : ℕ} → suc m ≤ n → m ≤ n
-        g {m} {.(suc _)} (s≤s e) = h e
-          where
-            h : {x y : ℕ} → x ≤ y → x ≤ suc y
-            h z≤n = z≤n
-            h (s≤s e) = s≤s (h e)
+rangeLP zero = LP-[]
+rangeLP (suc n) = (n , ≤-refl) ∷LP implicationLiftProp ≤-step (rangeLP n)
 
 {-
 
