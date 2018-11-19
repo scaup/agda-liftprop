@@ -115,6 +115,9 @@ sillyConcreteProof = noClaim {fa = repetitionsConcrete} >>LP' λ {a} → repeatL
 --sillyConcreteProofObviouslywrong : Lift IsEven sillyConcrete
 --sillyConcreteProofObviouslywrong = noClaim {fa = 9 ∷ []} >>LP' λ {a} → repeatLP {a} even8
 
+sillyConcreteProofUnobviouslyCorrect : Lift IsEven sillyConcrete
+sillyConcreteProofUnobviouslyCorrect = _>>LP'_ {f = λ _ → repeat 2 8} (noClaim {fa = repetitionsConcrete}) (repeatLP even8)
+
 -----
 
 data MonadSyntax (M : Set → Set) {{mM : Monad M}} : (A : Set) → Set₁ where
