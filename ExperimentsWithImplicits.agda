@@ -6,6 +6,7 @@ open import Monad2Functor
 open import Functor
 open import Data.Product
 
+
 postulate
   M : Set → Set
   instance
@@ -73,18 +74,7 @@ open import LiftProp.List
 
 -- stdlib {{{
 
-open import Data.Nat
-open import Data.Bool hiding (_≟_; _∧_; _∨_)
-open import Data.Product
-open import Data.Unit hiding (_≟_; _≤?_; _≤_)
-open import Data.Empty
-open import Data.Sum
-open import Function
-
-open import Relation.Unary using (Decidable)
-open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
-open ≡-Reasoning
 
 -- }}}
 
@@ -100,63 +90,26 @@ data IsEven : ℕ → Set where
   zeroEven : IsEven 0
   nsucsucEven : {n : ℕ} → IsEven n → IsEven (suc (suc n))
 
-lpE : LiftProp IsEven (2 ∷ 4 ∷ 6 ∷ [])
-lpE = {!!}
+even8 : IsEven 8
+even8 = nsucsucEven (nsucsucEven (nsucsucEven (nsucsucEven zeroEven)))
 
-lpT : LiftProp (const ⊤) (1 ∷ 2 ∷ 3 ∷ [])
-lpT = {!!}
+repetitionsConcrete : List ℕ
+repetitionsConcrete = 1 ∷ 2 ∷ 3 ∷ []
 
-test : List ℕ
-test = do
-         x ← 2 ∷ 4 ∷ 6 ∷ []
-         r ← 1 ∷ 2 ∷ 3 ∷ []
-         repeat r x
-
-the : (A : Set) → A → A
-the A a = a
-
-lpEven : LiftProp IsEven test
-lpEven = let
-           _>>=_ = _>>=LP_
-           _>>_ = _>>LP_
-           return = returnLP
-         in
-         do
-           (x , pE) ← lpE
-           (r , pT) ← lpT
-           repeatLP {r} {_} {_} pE -- cannot infer without r
-
+sillyConcrete : List ℕ
+sillyConcrete = repetitionsConcrete >>= λ r → (repeat r 8)
 
 postulate
-  liste : List ℕ
-  listr : List ℕ
-  listeLP : Lift IsEven liste
-  listtLP : Lift (const ⊤) listr
+  repetitionsAbstract : List ℕ
 
-test' : List ℕ
-test' = do
-         x ← liste
-         r ← listr
-         repeat r x
+sillyAbstract : List ℕ
+sillyAbstract = repetitionsAbstract >>= λ r → (repeat r 8)
 
-lpEven' : LiftProp IsEven test'
-lpEven' = let
-           _>>=_ = _>>=LP_
-           _>>_ = _>>LP_
-           return = returnLP
-         in
-         do
-           (x , pE) ← listeLP
-           (r , pT) ← noClaim {fa = listr}
-           repeatLP {_} {_} {_} pE -- can infer without r
+sillyAbstractProof : Lift IsEven sillyAbstract
+sillyAbstractProof = noClaim >>LP' repeatLP (even8)
 
-lpEven'' : LiftProp IsEven test'
-lpEven'' = let
-           _>>=_ = _>>=LP'_
-           _>>_ = _>>LP'_
-           return = returnLP
-         in
-         do
-           pE ← listeLP
-           noClaim {fa = listr}
-           repeatLP pE
+sillyConcreteProof : Lift IsEven sillyConcrete
+sillyConcreteProof = noClaim {fa = repetitionsConcrete} >>LP' repeatLP even8
+
+sillyConcreteProofObviouslywrong : Lift IsEven sillyConcrete
+sillyConcreteProofObviouslywrong = noClaim {fa = 9 ∷ []} >>LP' repeatLP even8
