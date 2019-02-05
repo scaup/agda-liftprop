@@ -2,11 +2,10 @@
 
 module Examples.Relabel where
 
-open import Monad
-open import Monad2Functor
-open import Functor
-open import Monad.State
-open import LiftProp
+open import MonadTC
+open import FunctorTC
+open import Monads.State
+open import Functors.State
 
 -- stdlib {{{
 
@@ -41,26 +40,12 @@ relabel (node l r) = do
 exampleTree : Tree Bool
 exampleTree = node (leaf true) (node (node (leaf false) (leaf false)) (leaf true))
 
-exampleTreeRelabelled : Tree ℕ
-exampleTreeRelabelled = node (leaf 5) (node (node (leaf 6) (leaf 7)) (leaf 8))
-
-data _≅_ {A B : Set} : Tree A → Tree B → Set where
-  leafISO : {a : A} → {b : B} → leaf a ≅ leaf b
-  nodesISO : {tal tar : Tree A} → {tbl tbr : Tree B} → tal ≅ tbl → tar ≅ tbr → node tal tar ≅ node tbl tbr
-
-isomorphicEx : exampleTree ≅ exampleTreeRelabelled
-isomorphicEx = nodesISO leafISO (nodesISO (nodesISO leafISO leafISO) leafISO)
 
 
 {-
 
 
 
-
--- isomorphic trees after relabelling {{{
-
-
--- }}}
 
 -- noduplicates {{{
 

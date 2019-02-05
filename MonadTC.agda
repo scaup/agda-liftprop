@@ -30,7 +30,7 @@ record Monad (M : Set → Set) : Set₁ where
   mx >> my = mx >>= λ _ → my
 
   fmap->>= : {A B C : Set} →
-    (g : B → M C) → (f : A → B) → (mx : M A) → fmap f mx >>= g ≡ mx >>= (g ∘ f)
+    (g : B → M C) → (f : A → B) → (mx : M A) → (fmap f mx) >>= g ≡ mx >>= (g ∘ f)
   fmap->>= g f mx = begin
                       fmap f mx >>= g
                     ≡⟨ cong (flip _>>=_ g) compatiblefmap ⟩
@@ -49,6 +49,19 @@ record Monad (M : Set → Set) : Set₁ where
       return a >>= (λ x → return (f x))
     ≡⟨ leftId _ _ ⟩
       return (f a) ∎
+
+  fmap-move->>= : {A B C : Set} →
+    (f : A → M B) → (ma : M A) → (g : B → C) →
+    (fmap g (ma >>= f)) ≡ (ma >>= (fmap g ∘ f))
+  fmap-move->>= f ma g =
+    begin
+      fmap g (ma >>= f)
+    ≡⟨ compatiblefmap ⟩
+      (ma >>= f) >>= (return ∘ g)
+    ≡⟨ assoc _ _ _ ⟩
+      (ma >>= (λ a → f a >>= (return ∘ g)))
+    ≡⟨ cong (_>>=_ ma) (funext (λ _ → sym compatiblefmap)) ⟩
+      (ma >>= (fmap g ∘ f)) ∎
 
 open Monad {{...}} public
 
