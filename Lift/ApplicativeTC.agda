@@ -1,5 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 module Lift.ApplicativeTC where
 
 open import Lift
@@ -15,8 +13,6 @@ open import Relation.Binary.PropositionalEquality
 open ≡-Reasoning
 
 -- }}}
-
-
 
 pureL : {A : Set → Set} → {{ _ : Applicative A }} →
            {X : Set} → {P : X → Set} →
@@ -35,15 +31,93 @@ pureL' : {A : Set → Set} → {{ _ : Applicative A }} →
            {x : X} → (p : P x) → Lift {X} {A} P (pure x)
 pureL' p = pureL (_ , p)
 
+
+move : {A : Set → Set} → {{ _ : Applicative A }} →
+       {X Y Z : Set} →
+       (k : Y → Z) → (af : A (X → Y)) → (ax : A X) →
+       fmap k (af <*> ax) ≡ fmap (λ x2y → k ∘ x2y) af <*> ax
+move k af ax =
+  begin
+    fmap k (af <*> ax)
+  ≡⟨ compatiblefmapA ⟩
+    pure k <*> (af <*> ax)
+  ≡⟨ compositionA _ af ax ⟩
+    ((pure (λ f g → f ∘ g) <*> pure k) <*> af) <*> ax
+  ≡⟨ cong (flip _<*>_ _) (cong (flip _<*>_ _) (homomorphism _ _)) ⟩
+    (pure ((λ f g → f ∘ g) k) <*> af) <*> ax
+  ≡⟨ refl ⟩
+    (pure ((λ f → k ∘ f)) <*> af) <*> ax
+  ≡⟨ cong (flip _<*>_ _) (sym compatiblefmapA ) ⟩
+    fmap (λ x2y → k ∘ x2y) af <*> ax ∎
+
+move' : {A : Set → Set} → {{ _ : Applicative A }} →
+       {X Y Z : Set} →
+       (k : X → Y) → (af : A (Y → Z)) → (ax : A X) →
+       fmap (λ f → f ∘ k) af <*> ax ≡ af <*> fmap k ax
+move' k af ax =
+  begin
+    fmap (λ f → f ∘ k) af <*> ax
+  ≡⟨ refl ⟩
+    fmap ((λ z → z k) ∘ (λ f g x → f (g x))) af <*> ax
+  ≡⟨ cong (flip _<*>_ _) (composition (λ f g x → f (g x)) (λ z → z k) af) ⟩
+    fmap (λ z → z k) (fmap (λ f g → f ∘ g) af) <*> ax
+  ≡⟨ cong (λ a → a <*> _) compatiblefmapA ⟩
+    (pure (λ z → z k) <*> (fmap (λ f g → f ∘ g) af)) <*> ax
+  ≡⟨ cong (λ a → (_ <*> a) <*> _) compatiblefmapA ⟩
+    (pure (λ z → z k) <*> (pure (λ f g → f ∘ g) <*> af)) <*> ax
+  ≡⟨ cong (flip _<*>_ _) (sym $ interchange _ _) ⟩
+    ((pure (λ f g → f ∘ g) <*> af) <*> pure k) <*> ax
+  ≡⟨ sym (compositionA _ _ _) ⟩
+    af <*> (pure k <*> ax)
+  ≡⟨ cong (_<*>_ _) (sym compatiblefmapA) ⟩
+    af <*> fmap k ax ∎
+
 _<*>L_ : {A : Set → Set} → {{ _ : Applicative A }} →
          {X Y : Set} → {P : Predicate X} → {Q : Predicate Y} →
          {af : A (X → Y)} → {ax : A X} →
            Lift (λ f → (xp : Σ X P) → Q (f (proj₁ xp))) af → Lift P ax → Lift Q (af <*> ax)
 witness (lfs <*>L lp) = fmapR (λ{ (f , pf) → λ{ (x , p) → (f x) , pf (x , p) }}) lfs <*> witness lp
-corresponds (lfs <*>L lp) = {!!}
+corresponds (_<*>L_ {af = af} {ax = ax} lfs lp) = sym $
+  begin
+    fmap proj₁ (fmap (λ{ (f , pf) → λ{ (x , p) → (f x) , pf (x , p) }}) (witness lfs) <*> witness lp)
+  ≡⟨ move _ _ _ ⟩
+    fmap (λ z → proj₁ ∘ z) (fmap (λ{ (f , pf) → λ{ (x , p) → (f x) , pf (x , p) }}) (witness lfs)) <*> witness lp
+  ≡⟨ cong (flip _<*>_ _) (sym (composition _ _ _)) ⟩
+    fmap ((λ{ (f , pf) → λ{ (x , p) → (f x) }})) (witness lfs) <*> witness lp
+  ≡⟨ refl ⟩
+    fmapR ((λ{ (f , pf) → λ{ (x , p) → (f x) }})) lfs <*> witness lp
+  ≡⟨ cong (flip _<*>_ _) (fmapRValid _ lfs _ _ refl) ⟩
+    fmap ((λ f → λ{ (x , p) → (f x) })) af <*> witness lp
+  ≡⟨ refl ⟩
+    fmap (λ f → f ∘ proj₁) af <*> witness lp
+  ≡⟨ move' _ _ _  ⟩
+    af <*> fmap proj₁ (witness lp)
+  ≡⟨ cong (_<*>_ _) (sym $ corresponds lp) ⟩
+    (af <*> ax) ∎
 
 _<*>L'_ : {A : Set → Set} → {{ _ : Applicative A }} →
           {X Y : Set} → {P : Predicate X} → {Q : Predicate Y} →
           {af : A (X → Y)} → {ax : A X} →
             Lift (λ f → {x : X} → (p : P x) → Q (f x)) af → Lift P ax → Lift Q (af <*> ax)
-lfs <*>L' lp = {!!}
+lfs <*>L' lp = applyL (λ{ imp (x , p) → imp p}) lfs <*>L lp
+
+
+{-
+_<*>L''_ : {A : Set → Set} → {{ _ : Applicative A }} →
+          {X Y : Set} → {P : Predicate X} → {Q : Predicate Y} →
+          {af : A (X → Y)} → {ax : A X} →
+            ({x : X} → Lift (λ f → (p : P x) → Q (f x)) af) → Lift P ax → Lift Q (af <*> ax)
+lfs <*>L'' lp = {!lfs!} <*>L' lp
+  where
+
+lemma : {F : Set → Set} → {{_ : Functor F}} →
+        {X Y : Set} → {f : X → Y} → {P : Predicate X} → {Q : Predicate Y} → {af : F (X → Y)} →
+        ({x : X} → Lift (λ f → (p : P x) → Q (f x)) af) → Lift (λ f → {x : X} → (p : P x) → Q (f x)) af
+lemma h = ?
+
+lemma' : {F : Set → Set} → {{_ : Functor F}} →
+        {X Y : Set} → {f : X → Y} → {P : Predicate X} → {Q : Predicate Y} → {af : F (X → Y)} →
+        Lift (λ f → {x : X} → (p : P x) → Q (f x)) af →
+        ({x : X} → Lift (λ f → (p : P x) → Q (f x)) af)
+lemma' = ?
+-}

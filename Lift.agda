@@ -1,5 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 module Lift where
 
 open import FunctorTC public
@@ -55,7 +53,7 @@ fmapR : ∀{F A B P} → {{_ : Functor F}} → {fa : F A} →
   F B
 fmapR f lp = fmap f (witness lp)
 
-fmapRValid : ∀{F A B P} → {{fimp : Functor F}} → (fa : F A) →
+fmapRValid : ∀{F A B P} → {{_ : Functor F}} → (fa : F A) →
   (Pfa : Lift P fa) →
   (fᵣ : Σ A P → B) →
   (f : A → B) →
@@ -73,22 +71,33 @@ fmapRValid fa faLP fᵣ f proofR =
   ≡⟨ cong (fmap f) (sym (corresponds faLP)) ⟩
     fmap f fa ∎
 
-implicationL : {F : Set → Set} → {{_ : Functor F}} →
-               {A : Set} → {fa : F A } → {P Q : Predicate A} →
-               ((a : A) → P a → Q a) →
-               Lift P fa → Lift Q fa
-witness (implicationL Imp Pfa) = fmapR (λ{(a , p) → a , Imp a p}) Pfa
-corresponds (implicationL {A = A} {fa = fa} {P = P} {Q = Q} Imp Pfa) = sym $
+fmapL' : ∀{F} → {{_ : Functor F}} → {A B : Set} →
+  {P : Predicate A} → {Q : Predicate B} →
+  {as : F A} → {f : A → B} →
+  ({a : A} → P a → Q (f a)) → Lift P as → Lift Q (fmap f as)
+witness (fmapL' {f = f} fL asP) = fmapR (λ{(a , p) → f a , fL p}) asP
+corresponds (fmapL' {f = f} fL asP) = sym $
   begin
-    fmap proj₁ (fmap (λ {(a , p) → a , Imp a p}) (witness Pfa))
+    fmap proj₁ (fmap (λ { (a , p) → f a , fL p }) (witness asP))
   ≡⟨ sym $ composition _ _ _ ⟩
-    fmap (proj₁ {A = A} {B = Q} ∘ (λ {(a , p) → a , Imp a p})) (witness Pfa)
-  ≡⟨ refl ⟩
-    fmap proj₁ (witness Pfa)
-  ≡⟨ sym $ corresponds Pfa ⟩
-    fa ∎
+    fmap (f ∘ proj₁) (witness asP)
+  ≡⟨ composition _ _ _ ⟩
+    fmap f (fmap proj₁ (witness asP))
+  ≡⟨ cong (fmap f) (sym $ corresponds asP) ⟩
+    fmap f _ ∎
+
+subsL : {F : Set → Set} → {{_ : Functor F}} →
+        {A : Set} → {fa₁ fa₂ : F A } → {P : Predicate A} →
+          fa₁ ≡ fa₂ → Lift P fa₁ → Lift P fa₂
+subsL refl = id
+
+applyL : {F : Set → Set} → {{_ : Functor F}} →
+              {A : Set} → {fa : F A } → {P Q : Predicate A} →
+              ({a : A} → P a → Q a) →
+              Lift P fa → Lift Q fa
+applyL {fa = fa} imp lp = subsL unit (fmapL' {f = id} imp lp)
 
 LPOr : ∀{F A} → {{ _ : Functor F }} → {fa : F A} → {P Q : Predicate A} →
   Lift P fa ⊎ Lift Q fa → Lift (P ∨ Q) fa
-LPOr (inj₁ pPfa) = implicationL (λ a x → inj₁ x) pPfa
-LPOr (inj₂ pQfa) = implicationL (λ a x → inj₂ x) pQfa
+LPOr (inj₁ pPfa) = applyL inj₁ pPfa
+LPOr (inj₂ pQfa) = applyL inj₂ pQfa
