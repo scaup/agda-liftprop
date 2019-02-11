@@ -1,3 +1,5 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 module Lift.ApplicativeTC where
 
 open import Lift
@@ -102,14 +104,13 @@ _<*>L'_ : {A : Set → Set} → {{ _ : Applicative A }} →
 lfs <*>L' lp = applyL (λ{ imp (x , p) → imp p}) lfs <*>L lp
 
 
-{-
 _<*>L''_ : {A : Set → Set} → {{ _ : Applicative A }} →
           {X Y : Set} → {P : Predicate X} → {Q : Predicate Y} →
           {af : A (X → Y)} → {ax : A X} →
             ({x : X} → Lift (λ f → (p : P x) → Q (f x)) af) → Lift P ax → Lift Q (af <*> ax)
 lfs <*>L'' lp = {!lfs!} <*>L' lp
-  where
 
+{-
 lemma : {F : Set → Set} → {{_ : Functor F}} →
         {X Y : Set} → {f : X → Y} → {P : Predicate X} → {Q : Predicate Y} → {af : F (X → Y)} →
         ({x : X} → Lift (λ f → (p : P x) → Q (f x)) af) → Lift (λ f → {x : X} → (p : P x) → Q (f x)) af

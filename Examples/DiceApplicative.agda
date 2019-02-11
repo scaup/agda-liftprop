@@ -13,7 +13,7 @@ open import Data.Nat
 genericDie = 1 ∷ 2 ∷ 3 ∷ 4 ∷ 5 ∷ 6 ∷ []
 
 twoDice : List ℕ
-twoDice = ⦇ genericDie + genericDie ⦈
+twoDice = ⦇ _+_ genericDie genericDie ⦈
 
 twoTimes : List ℕ → List ℕ
-twoTimes die = ⦇ genericDie + genericDie ⦈
+twoTimes die = ⦇ die + die ⦈
