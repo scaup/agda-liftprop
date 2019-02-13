@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 module Lift where
 
 open import FunctorTC public
@@ -99,12 +98,12 @@ applyL : {F : Set → Set} → {{_ : Functor F}} →
               Lift P fa → Lift Q fa
 applyL {fa = fa} imp lp = subsL unit (fmapL {f = id} imp lp)
 
-moveQInL : {F : Set → Set} → {{_ : Functor F}} →
-              {A : Set} → {fa : F A } →
-              {R : Set} → {P : R → A → Set} →
-              ((r : R) → Lift (P r) fa) →
-              Lift (λ a → (r : R) → P r a) fa
-moveQInL lp = {!!} -- misschien enkel geldig voor subclasse?
+-- moveQInL : {F : Set → Set} → {{_ : Functor F}} →
+              -- {A : Set} → {fa : F A } →
+              -- {R : Set} → {P : R → A → Set} →
+              -- ((r : R) → Lift (P r) fa) →
+              -- Lift (λ a → (r : R) → P r a) fa
+-- moveQInL lp = applyL (λ {a} x → {!!}) (lp {!!}) -- misschien enkel geldig voor subclasse?
 
 moveQOutL : {F : Set → Set} → {{_ : Functor F}} →
               {A : Set} → {fa : F A } →

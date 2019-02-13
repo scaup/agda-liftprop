@@ -16,11 +16,11 @@ open ≡-Reasoning
 
 -- }}}
 
-pureL : {A : Set → Set} → {{ _ : Applicative A }} →
+pureLold : {A : Set → Set} → {{ _ : Applicative A }} →
            {X : Set} → {P : X → Set} →
            (xp : Σ X P) → Lift {X} {A} P (pure (proj₁ xp))
-witness (pureL xp) = pure xp
-corresponds (pureL (x , p)) = sym $
+witness (pureLold xp) = pure xp
+corresponds (pureLold (x , p)) = sym $
   begin
     fmap proj₁ (pure (x , p))
   ≡⟨ compatiblefmapA ⟩
@@ -28,10 +28,10 @@ corresponds (pureL (x , p)) = sym $
   ≡⟨ homomorphism proj₁ (x , p) ⟩
     pure x ∎
 
-pureL' : {A : Set → Set} → {{ _ : Applicative A }} →
+pureL : {A : Set → Set} → {{ _ : Applicative A }} →
            {X : Set} → {P : X → Set} →
            {x : X} → (p : P x) → Lift {X} {A} P (pure x)
-pureL' p = pureL (_ , p)
+pureL p = pureLold (_ , p)
 
 
 move : {A : Set → Set} → {{ _ : Applicative A }} →
@@ -74,12 +74,12 @@ move' k af ax =
   ≡⟨ cong (_<*>_ _) (sym compatiblefmapA) ⟩
     af <*> fmap k ax ∎
 
-_<*>L_ : {A : Set → Set} → {{ _ : Applicative A }} →
+_<*>Lold_ : {A : Set → Set} → {{ _ : Applicative A }} →
          {X Y : Set} → {P : Predicate X} → {Q : Predicate Y} →
          {af : A (X → Y)} → {ax : A X} →
            Lift (λ f → (xp : Σ X P) → Q (f (proj₁ xp))) af → Lift P ax → Lift Q (af <*> ax)
-witness (lfs <*>L lp) = fmapR (λ{ (f , pf) → λ{ (x , p) → (f x) , pf (x , p) }}) lfs <*> witness lp
-corresponds (_<*>L_ {af = af} {ax = ax} lfs lp) = sym $
+witness (lfs <*>Lold lp) = fmapR (λ{ (f , pf) → λ{ (x , p) → (f x) , pf (x , p) }}) lfs <*> witness lp
+corresponds (_<*>Lold_ {af = af} {ax = ax} lfs lp) = sym $
   begin
     fmap proj₁ (fmap (λ{ (f , pf) → λ{ (x , p) → (f x) , pf (x , p) }}) (witness lfs) <*> witness lp)
   ≡⟨ move _ _ _ ⟩
@@ -97,28 +97,8 @@ corresponds (_<*>L_ {af = af} {ax = ax} lfs lp) = sym $
   ≡⟨ cong (_<*>_ _) (sym $ corresponds lp) ⟩
     (af <*> ax) ∎
 
-_<*>L'_ : {A : Set → Set} → {{ _ : Applicative A }} →
+_<*>L_ : {A : Set → Set} → {{ _ : Applicative A }} →
           {X Y : Set} → {P : Predicate X} → {Q : Predicate Y} →
           {af : A (X → Y)} → {ax : A X} →
             Lift (λ f → {x : X} → (p : P x) → Q (f x)) af → Lift P ax → Lift Q (af <*> ax)
-lfs <*>L' lp = applyL (λ{ imp (x , p) → imp p}) lfs <*>L lp
-
-
-_<*>L''_ : {A : Set → Set} → {{ _ : Applicative A }} →
-          {X Y : Set} → {P : Predicate X} → {Q : Predicate Y} →
-          {af : A (X → Y)} → {ax : A X} →
-            ({x : X} → Lift (λ f → (p : P x) → Q (f x)) af) → Lift P ax → Lift Q (af <*> ax)
-lfs <*>L'' lp = applyL (λ {f} h {x} → {!h!}) (lfs {{!x is out of scope!}}) <*>L' lp
-
-{-
-lemma : {F : Set → Set} → {{_ : Functor F}} →
-        {X Y : Set} → {f : X → Y} → {P : Predicate X} → {Q : Predicate Y} → {af : F (X → Y)} →
-        ({x : X} → Lift (λ f → (p : P x) → Q (f x)) af) → Lift (λ f → {x : X} → (p : P x) → Q (f x)) af
-lemma h = ?
-
-lemma' : {F : Set → Set} → {{_ : Functor F}} →
-        {X Y : Set} → {f : X → Y} → {P : Predicate X} → {Q : Predicate Y} → {af : F (X → Y)} →
-        Lift (λ f → {x : X} → (p : P x) → Q (f x)) af →
-        ({x : X} → Lift (λ f → (p : P x) → Q (f x)) af)
-lemma' = ?
--}
+lfs <*>L lp = applyL (λ{ imp (x , p) → imp p}) lfs <*>Lold lp
