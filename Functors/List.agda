@@ -71,6 +71,15 @@ indListL' C c[] c∷ {.(proj₁ xpx) ∷ .(fmap proj₁ xpxs)} record { witness 
   c∷ (proj₂ xpx) (record { witness = xpxs ; corresponds = refl })
      (indListL' C c[] c∷ (record { witness = xpxs ; corresponds = refl }))
 
+hdL : {A : Set} {P : Predicate A} {a : A} {as : List A} → Lift P (a ∷ as) → P a
+hdL {A} {P} {a} {as} record { witness = [] ; corresponds = () }
+hdL {A} {P} {.(proj₁ xpx)} {.(fmap proj₁ xpxs)} record { witness = (xpx ∷ xpxs) ; corresponds = refl } = proj₂ xpx
+
+tlL : {A : Set} {P : Predicate A} {a : A} {as : List A} → Lift P (a ∷ as) → Lift P as
+tlL {A} {P} {a} {as} record { witness = [] ; corresponds = () }
+tlL {A} {P} {.(proj₁ xpx)} {.(fmap proj₁ xpxs)} record { witness = (xpx ∷ xpxs) ; corresponds = refl } =
+  record { witness = xpxs ; corresponds = refl }
+
 -- }}}
 
 -- Derived forms
