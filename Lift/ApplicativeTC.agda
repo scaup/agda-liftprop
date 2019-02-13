@@ -97,8 +97,11 @@ corresponds (_<*>Lold_ {af = af} {ax = ax} lfs lp) = sym $
   ≡⟨ cong (_<*>_ _) (sym $ corresponds lp) ⟩
     (af <*> ax) ∎
 
+_↦_ : {X Y : Set} → Predicate X → Predicate Y → Predicate (X → Y)
+(_↦_ {X} P Q) f = {x : X} → P x → Q (f x)
+
 _<*>L_ : {A : Set → Set} → {{ _ : Applicative A }} →
           {X Y : Set} → {P : Predicate X} → {Q : Predicate Y} →
           {af : A (X → Y)} → {ax : A X} →
-            Lift (λ f → {x : X} → (p : P x) → Q (f x)) af → Lift P ax → Lift Q (af <*> ax)
+            Lift (P ↦ Q) af → Lift P ax → Lift Q (af <*> ax)
 lfs <*>L lp = applyL (λ{ imp (x , p) → imp p}) lfs <*>Lold lp
