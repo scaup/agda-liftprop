@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 module Lift where
 
 open import FunctorTC public
@@ -71,12 +72,12 @@ fmapRValid fa faLP fᵣ f proofR =
   ≡⟨ cong (fmap f) (sym (corresponds faLP)) ⟩
     fmap f fa ∎
 
-fmapL' : ∀{F} → {{_ : Functor F}} → {A B : Set} →
+fmapL : ∀{F} → {{_ : Functor F}} → {A B : Set} →
   {P : Predicate A} → {Q : Predicate B} →
   {as : F A} → {f : A → B} →
   ({a : A} → P a → Q (f a)) → Lift P as → Lift Q (fmap f as)
-witness (fmapL' {f = f} fL asP) = fmapR (λ{(a , p) → f a , fL p}) asP
-corresponds (fmapL' {f = f} fL asP) = sym $
+witness (fmapL {f = f} fL asP) = fmapR (λ{(a , p) → f a , fL p}) asP
+corresponds (fmapL {f = f} fL asP) = sym $
   begin
     fmap proj₁ (fmap (λ { (a , p) → f a , fL p }) (witness asP))
   ≡⟨ sym $ composition _ _ _ ⟩
@@ -85,6 +86,7 @@ corresponds (fmapL' {f = f} fL asP) = sym $
     fmap f (fmap proj₁ (witness asP))
   ≡⟨ cong (fmap f) (sym $ corresponds asP) ⟩
     fmap f _ ∎
+
 
 subsL : {F : Set → Set} → {{_ : Functor F}} →
         {A : Set} → {fa₁ fa₂ : F A } → {P : Predicate A} →
@@ -95,7 +97,22 @@ applyL : {F : Set → Set} → {{_ : Functor F}} →
               {A : Set} → {fa : F A } → {P Q : Predicate A} →
               ({a : A} → P a → Q a) →
               Lift P fa → Lift Q fa
-applyL {fa = fa} imp lp = subsL unit (fmapL' {f = id} imp lp)
+applyL {fa = fa} imp lp = subsL unit (fmapL {f = id} imp lp)
+
+moveQInL : {F : Set → Set} → {{_ : Functor F}} →
+              {A : Set} → {fa : F A } →
+              {R : Set} → {P : R → A → Set} →
+              ((r : R) → Lift (P r) fa) →
+              Lift (λ a → (r : R) → P r a) fa
+moveQInL lp = {!!} -- misschien enkel geldig voor subclasse?
+
+moveQOutL : {F : Set → Set} → {{_ : Functor F}} →
+              {A : Set} → {fa : F A } →
+              {R : Set} → {P : R → A → Set} →
+              Lift (λ a → (r : R) → P r a) fa →
+              ((r : R) → Lift (P r) fa)
+moveQOutL lp r = applyL (λ x → x r) (lp)
+
 
 LPOr : ∀{F A} → {{ _ : Functor F }} → {fa : F A} → {P Q : Predicate A} →
   Lift P fa ⊎ Lift Q fa → Lift (P ∨ Q) fa
