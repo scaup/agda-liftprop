@@ -44,23 +44,29 @@ range (suc n) (suc m) = fmap suc (range n m)
 []L = record { witness = [] ; corresponds = refl }
 
 _∷L_ : {A : Set} → {P : Predicate A} → {xs : List A} →
-  {a : A} → (P a) → Lift P xs → Lift P (a ∷ xs)
-pa ∷L record { witness = xs ; corresponds = refl } =
-  record { witness = (_ , pa) ∷ xs ; corresponds = refl }
-
-invertP-cons : ∀ {A} {P : Predicate A} {x} {xs} → Lift P (x ∷ xs) → P x × (Lift P xs)
-invertP-cons lp with destruct lp
-  where
-   destruct : {A : Set} → {P : Predicate A} → {xs : List A} → Lift P xs → xs ≡ [] ⊎ Σ[ a ∈ A ] P a × Σ[ t ∈ List A ] Lift P t × (xs ≡ a ∷ t)
-   destruct record { witness = [] ; corresponds = corresponds } = inj₁ corresponds
-   destruct record { witness = ((x , px) ∷ xs) ; corresponds = refl } =
-     inj₂ (x , px , fmap proj₁ xs , record { witness = xs ; corresponds = refl } , refl)
-invertP-cons lp | inj₁ ()
-invertP-cons lp | inj₂ (a , pa , as , asP , refl) = pa , asP
+<<<<<<< HEAD
+  (ap : Σ A P) → Lift P xs → let (a , p) = ap in Lift P (a ∷ xs)
+(a , p) ∷L record { witness = xs ; corresponds = refl } =
+  record { witness = (a , p) ∷ xs ; corresponds = refl }
 
 destruct : {A : Set} → {P : Predicate A} → {xs : List A} → Lift P xs → xs ≡ [] ⊎ Σ[ a ∈ A ] P a × Σ[ t ∈ List A ] Lift P t × (xs ≡ a ∷ t)
 destruct record { witness = [] ; corresponds = corresponds } = inj₁ corresponds
 destruct record { witness = ((x , px) ∷ xs) ; corresponds = refl } = inj₂ (x , px , fmap proj₁ xs , record { witness = xs ; corresponds = refl } , refl)
+
+indList : {A : Set} (C : List A → Set) (c[] : C []) (c∷ : (x : A) (xs : List A) → C xs → C (x ∷ xs)) (as : List A) → C as
+indList C c[] c∷ [] = c[]
+indList C c[] c∷ (x ∷ as) = c∷ x as (indList C c[] c∷ as)
+
+indListL' : {A : Set} {P : Predicate A} (C : (xs : List A) → Lift P xs → Set)
+           (c[] : C [] []L)
+           (c∷ : ∀{x : A}(px : P x){xs : List A}(pxs : Lift P xs) → C xs pxs → C (x ∷ xs) ((x , px) ∷L pxs))
+           {as : List A}(pas : Lift P as) → C as pas
+indListL' C c[] c∷ {[]} record { witness = [] ; corresponds = refl } = c[]
+indListL' C c[] c∷ {[]} record { witness = (x ∷ witness₁) ; corresponds = () }
+indListL' C c[] c∷ {x ∷ as} record { witness = [] ; corresponds = () }
+indListL' C c[] c∷ {.(proj₁ xpx) ∷ .(fmap proj₁ xpxs)} record { witness = (xpx ∷ xpxs) ; corresponds = refl } =
+  c∷ (proj₂ xpx) (record { witness = xpxs ; corresponds = refl })
+     (indListL' C c[] c∷ (record { witness = xpxs ; corresponds = refl }))
 
 hdL : {A : Set} {P : Predicate A} {a : A} {as : List A} → Lift P (a ∷ as) → P a
 hdL {A} {P} {a} {as} record { witness = [] ; corresponds = () }
@@ -74,6 +80,21 @@ tlL {A} {P} {.(proj₁ xpx)} {.(fmap proj₁ xpxs)} record { witness = (xpx ∷ 
 -- }}}
 
 -- Derived forms
+=======
+  {a : A} → (P a) → Lift P xs → Lift P (a ∷ xs)
+pa ∷L record { witness = xs ; corresponds = refl } =
+  record { witness = (_ , pa) ∷ xs ; corresponds = refl }
+
+invertP-cons : ∀ {A} {P : Predicate A} {x} {xs} → Lift P (x ∷ xs) → P x × (Lift P xs)
+invertP-cons lp with destruct lp
+  where
+   destruct : {A : Set} → {P : Predicate A} → {xs : List A} → Lift P xs → xs ≡ [] ⊎ Σ[ a ∈ A ] P a × Σ[ t ∈ List A ] Lift P t × (xs ≡ a ∷ t)
+   destruct record { witness = [] ; corresponds = corresponds } = inj₁ corresponds
+   destruct record { witness = ((x , px) ∷ xs) ; corresponds = refl } =
+     inj₂ (x , px , fmap proj₁ xs , record { witness = xs ; corresponds = refl } , refl)
+invertP-cons lp | inj₁ ()
+invertP-cons lp | inj₂ (a , pa , as , asP , refl) = pa , asP
+>>>>>>> 19b43484cd81fa6115b3e98304d42ff01adb4a13
 
 [_]L : {A : Set} → {P : Predicate A} → {a : A} → P a → Lift P [ a ]
 [_]L pa = pa ∷L []L
