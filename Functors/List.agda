@@ -25,8 +25,10 @@ instance
   listFunctor : Functor List
   Functor.fmap listFunctor f [] = []
   Functor.fmap listFunctor f (x ∷ xs) = f x ∷ fmap f xs
-  Functor.composition listFunctor g f fa = {!!}
-  Functor.unit listFunctor = {!!}
+  Functor.composition listFunctor g f [] = refl
+  Functor.composition listFunctor g f (x ∷ xs) = cong (λ zs → f (g x) ∷ zs) (Functor.composition listFunctor g f xs)
+  Functor.unit listFunctor {fa = []} = refl
+  Functor.unit listFunctor {fa = x ∷ xs} = cong (λ xs → x ∷ xs) (Functor.unit listFunctor)
 
 filter : {A : Set} → (A → Bool) → List A → List A
 filter f [] = []
