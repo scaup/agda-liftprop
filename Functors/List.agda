@@ -99,3 +99,21 @@ rangeDownBound zero zero = [ z≤n ]L
 rangeDownBound (suc n) zero = []L
 rangeDownBound zero (suc m) = rangeDownBound zero m ++L [ z≤n ]L
 rangeDownBound (suc n) (suc m) = fmapL s≤s (rangeDownBound n m)
+
+-- Voorstel andreas
+
+indList : {A : Set} (C : List A → Set) (c[] : C []) (c∷ : (x : A) (xs : List A) → C xs → C (x ∷ xs)) (as : List A) → C as
+indList C c[] c∷ [] = c[]
+indList C c[] c∷ (x ∷ as) = c∷ x as (indList C c[] c∷ as)
+
+indListL' : {A : Set} {P : Predicate A} (C : (xs : List A) → Lift P xs → Set)
+           (c[] : C [] []L)
+           (c∷ : ∀{x : A}(px : P x){xs : List A}(pxs : Lift P xs) → C xs pxs → C (x ∷ xs) (px ∷L pxs))
+           {as : List A}(pas : Lift P as) → C as pas
+indListL' C c[] c∷ {[]} record { witness = [] ; corresponds = refl } = c[]
+indListL' C c[] c∷ {[]} record { witness = (x ∷ witness₁) ; corresponds = () }
+indListL' C c[] c∷ {x ∷ as} record { witness = [] ; corresponds = () }
+indListL' C c[] c∷ {.(proj₁ xpx) ∷ .(fmap proj₁ xpxs)} record { witness = (xpx ∷ xpxs) ; corresponds = refl } =
+  c∷ (proj₂ xpx) (record { witness = xpxs ; corresponds = refl })
+     (indListL' C c[] c∷ (record { witness = xpxs ; corresponds = refl }))
+

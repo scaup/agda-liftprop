@@ -108,7 +108,7 @@ _<*>L''_ : {A : Set → Set} → {{ _ : Applicative A }} →
           {X Y : Set} → {P : Predicate X} → {Q : Predicate Y} →
           {af : A (X → Y)} → {ax : A X} →
             ({x : X} → Lift (λ f → (p : P x) → Q (f x)) af) → Lift P ax → Lift Q (af <*> ax)
-lfs <*>L'' lp = {!lfs!} <*>L' lp
+lfs <*>L'' lp = applyL (λ {f} h {x} → {!h!}) (lfs {{!x is out of scope!}}) <*>L' lp
 
 {-
 lemma : {F : Set → Set} → {{_ : Functor F}} →
