@@ -1,10 +1,9 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 module Monads.State where
 
 open import MonadTC
 
 open import Functors.State
+open import Applicatives.State public
 
 open import Postulates
 
@@ -25,13 +24,16 @@ open ≡-Reasoning
 
 -- }}}
 
+_>>=S_ : ∀{S A B} → State S A → (A → State S B) → State S B
+(k >>=S f) s₀ with k s₀
+(k >>=S f) s₀ | a , s₁ = f a s₁
+
 instance
+  open Monad
   stateMonad : {S : Set} → Monad (State S)
-  runState (Monad.return stateMonad x) s = x , s
-  runState ((stateMonad Monad.>>= record { runState = k }) f) s0 with k s0
-  runState ((stateMonad Monad.>>= record { runState = k }) f) s0 | x , s1 = runState (f x) s1
-  Monad.leftId stateMonad = {!!}
-  Monad.rightId stateMonad = {!!}
-  Monad.assoc stateMonad = {!!}
-  Monad.functorM stateMonad = stateFunctor
-  Monad.compatiblefmap stateMonad {X} {Y} {f} {k} = {!!}
+  Monad.applicativeM stateMonad = stateApplicative
+  _>>=_ stateMonad = _>>=S_
+  Monad.leftId stateMonad = λ f x → refl
+  Monad.rightId stateMonad = λ m → refl
+  Monad.assoc stateMonad = λ g f mx → refl
+  Monad.compatible<*> stateMonad = λ mf mx → refl

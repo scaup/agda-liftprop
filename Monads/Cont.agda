@@ -1,25 +1,20 @@
-module Monad.Cont where
+module Monads.Cont where
 
-open import Monad public
--- open import Imports
+open import MonadTC
+open import Applicatives.Cont
+open import Functors.Cont
 
--- stdlib {{{
-
+open import Function
 open import Relation.Binary.PropositionalEquality
 open ≡-Reasoning
 
--- }}}
-
-record Cont (C A : Set) : Set where
-  field
-    runCont : (A → C) → C
-
-open Cont public
 
 instance
   contMonad : {C : Set} → Monad (Cont C)
-  runCont (Monad.return contMonad x) f = f x
-  runCont ((contMonad Monad.>>= record { runCont = cx }) f) y2c = cx (λ x → runCont (f x) y2c)
-  Monad.leftId contMonad f x = refl
-  Monad.rightId contMonad m = refl
-  Monad.assoc contMonad g f mx = refl
+  open Monad
+  applicativeM contMonad = contApplicative
+  _>>=_ contMonad cx f = λ k → cx (λ x → (f x) k)
+  leftId contMonad f x = refl
+  rightId contMonad cx = refl
+  assoc contMonad g f mx = refl
+  compatible<*> contMonad cf cx = refl

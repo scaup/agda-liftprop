@@ -1,14 +1,17 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
-module Functors.List where
+module Functors.Cont where
 
 open import FunctorTC
 
-open import Data.List
+open import Function
+open import Relation.Binary.PropositionalEquality
+
+Cont : Set → Set → Set
+Cont C A = (A → C) → C
+
 
 instance
-  listFunctor : Functor List
-  Functor.fmap listFunctor f [] = []
-  Functor.fmap listFunctor f (x ∷ xs) = f x ∷ fmap f xs
-  Functor.composition listFunctor g f fa = {!!}
-  Functor.unit listFunctor = {!!}
+  contFunctor : ∀{C} → Functor (Cont C)
+  open Functor
+  fmap contFunctor f c k = c (k ∘ f)
+  composition contFunctor f g c = refl
+  unit contFunctor = refl

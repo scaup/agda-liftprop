@@ -19,31 +19,31 @@ open ≡-Reasoning
 
 -- }}}
 
-record State (S A : Set) : Set where
-  field
-    runState : S → A × S
-
-open State public
-
-evalState : ∀{S A} → State S A → S → A
-evalState record { runState = k } s = proj₁ $ k s
-
-execState : ∀{S A} → State S A → S → S
-execState record { runState = k } s = proj₂ $ k s
+State : Set → Set → Set
+State S A = S → A × S
 
 get : {S : Set} → State S S
-runState get s = s , s
+get s = s , s
 
 modify : {S : Set} → (S → S) → State S ⊤
-runState (modify f) s = tt , f s
+modify f s = tt , f s
 
 put : {S : Set} → S → State S ⊤
-runState (put s) s' = tt , s
+put s s' = tt , s
 
+evalState : {A S : Set} → State S A → S → A
+evalState k s = proj₁ (k s)
+
+execState : {A S : Set} → State S A → S → S
+execState k s = proj₂ (k s)
+
+runState : {A S : Set} → State S A → S → A × S
+runState = id
 
 instance
-  stateFunctor : {S : Set} → Functor (State S)
-  runState (Functor.fmap stateFunctor f record { runState = k }) s0 with k s0
-  runState (Functor.fmap stateFunctor f record { runState = k }) s0 | x , s1 = f x , s1
-  Functor.composition stateFunctor g f fa = refl
-  Functor.unit stateFunctor = refl
+  open Functor
+  stateFunctor : ∀{S} → Functor (State S)
+  fmap stateFunctor f k s₀ with k s₀
+  fmap stateFunctor f k s₀ | x , s₁ = f x , s₁
+  composition stateFunctor g f k = refl
+  unit stateFunctor = refl
