@@ -1,23 +1,7 @@
 module FunctorTC where
 
--- stdlib {{{
-
-open import Data.Nat
-open import Postulates
-open import Data.List
-open import Data.Bool hiding (_≟_; _∧_)
-open import Data.Product
-open import Data.Unit hiding (_≟_; _≤?_; _≤_)
-open import Data.Empty
-open import Data.Sum
 open import Function
-
-open import Relation.Unary using (Decidable)
-open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
-open ≡-Reasoning
-
--- }}}
 
 record Functor (F : Set → Set) : Set₁ where
   field
@@ -26,7 +10,6 @@ record Functor (F : Set → Set) : Set₁ where
                   fmap (f ∘ g) fa ≡ (fmap f ∘ fmap g) fa
     unit : {A : Set} → {fa : F A} → fmap {X = A} {Y = A} id fa ≡ fa
 
-
 open Functor {{...}} public
 
-{-# DISPLAY Functor.fmap imp a = fmap a #-}
+-- {-# DISPLAY Functor.fmap imp a = fmap a #-}

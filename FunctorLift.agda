@@ -1,40 +1,23 @@
-module Lift where
+open import FunctorTC
+module FunctorLift {F : Set → Set} {{imp : Functor F}} where
 
-open import FunctorTC public
-
-open import Postulates
-
--- stdlib {{{
-
-open import Data.Product
-open import Data.Unit
-open import Data.Sum
-open import Function
-
+open import Data.Unit using (⊤ ; tt) public
+open import Data.Product public
+open import Data.Sum using (_⊎_ ; inj₁ ; inj₂) public
+open import Function public
 open import Relation.Binary.PropositionalEquality
-open ≡-Reasoning
+open ≡-Reasoning public
 
--- }}}
+open import Prelude public
 
-Predicate : (A : Set) → Set₁
-Predicate A = A → Set
-
-_∨_ : {A : Set} → Predicate A → Predicate A → Predicate A
-(P ∨ Q) a = P a ⊎ Q a
-
-_∧_ : {A : Set} → Predicate A → Predicate A → Predicate A
-(P ∧ Q) a = P a × Q a
-
-record Lift {A : Set} {F : Set → Set} {{ Fimp : Functor F }} (P : Predicate A) (monadicValue : F A) : Set where
+record Lift {A : Set} (P : Predicate A) (fa : F A) : Set where
   field
-    witness : F (Σ[ x ∈ A ] P x)
-    corresponds : monadicValue ≡ fmap proj₁ witness
+    witness : F (Σ A P)
+    corresponds : fa ≡ fmap proj₁ witness
 
 open Lift public
 
-nothing2Prove : {F : Set → Set} → {{ Fimp : Functor F }} →
-                {A : Set} →
-                (fa : F A) → Lift (const ⊤) fa
+nothing2Prove : ∀{A} (fa : F A) → Lift (const ⊤) fa
 witness (nothing2Prove fa) = fmap (λ a → a , tt) fa
 corresponds (nothing2Prove fa) = sym $
   begin
@@ -44,16 +27,13 @@ corresponds (nothing2Prove fa) = sym $
   ≡⟨ unit ⟩
     fa ∎
 
-Res : {A B : Set} → (A → B) → (P : Predicate A) → (Σ A P → B)
-Res {A} {B} f P = f ∘ proj₁
-
-fmapR : ∀{F A B P} → {{_ : Functor F}} → {fa : F A} →
+fmapR : ∀{A B P} → {fa : F A} →
   (Σ A P → B) →
   (Lift P fa) →
   F B
 fmapR f lp = fmap f (witness lp)
 
-fmapRValid : ∀{F A B P} → {{_ : Functor F}} → (fa : F A) →
+fmapRValid : ∀{A B P} → (fa : F A) →
   (Pfa : Lift P fa) →
   (fᵣ : Σ A P → B) →
   (f : A → B) →
@@ -71,8 +51,7 @@ fmapRValid fa faLP fᵣ f proofR =
   ≡⟨ cong (fmap f) (sym (corresponds faLP)) ⟩
     fmap f fa ∎
 
-fmapL : ∀{F} → {{_ : Functor F}} → {A B : Set} →
-  {P : Predicate A} → {Q : Predicate B} →
+fmapL : {A B : Set} → {P : Predicate A} → {Q : Predicate B} →
   {as : F A} → {f : A → B} →
   ({a : A} → P a → Q (f a)) → Lift P as → Lift Q (fmap f as)
 witness (fmapL {f = f} fL asP) = fmapR (λ{(a , p) → f a , fL p}) asP
@@ -86,34 +65,32 @@ corresponds (fmapL {f = f} fL asP) = sym $
   ≡⟨ cong (fmap f) (sym $ corresponds asP) ⟩
     fmap f _ ∎
 
-
-subsL : {F : Set → Set} → {{_ : Functor F}} →
-        {A : Set} → {fa₁ fa₂ : F A } → {P : Predicate A} →
+subsL : {A : Set} → {fa₁ fa₂ : F A } → {P : Predicate A} →
           fa₁ ≡ fa₂ → Lift P fa₁ → Lift P fa₂
 subsL refl = id
 
-applyL : {F : Set → Set} → {{_ : Functor F}} →
-              {A : Set} → {fa : F A } → {P Q : Predicate A} →
-              ({a : A} → P a → Q a) →
-              Lift P fa → Lift Q fa
+applyL : {A : Set} → {fa : F A } → {P Q : Predicate A} →
+          ({a : A} → P a → Q a) → Lift P fa → Lift Q fa
 applyL {fa = fa} imp lp = subsL unit (fmapL {f = id} imp lp)
 
--- moveQInL : {F : Set → Set} → {{_ : Functor F}} →
-              -- {A : Set} → {fa : F A } →
+-- moveQInL : {A : Set} → {fa : F A } →
               -- {R : Set} → {P : R → A → Set} →
               -- ((r : R) → Lift (P r) fa) →
               -- Lift (λ a → (r : R) → P r a) fa
 -- moveQInL lp = applyL (λ {a} x → {!!}) (lp {!!}) -- misschien enkel geldig voor subclasse?
 
-moveQOutL : {F : Set → Set} → {{_ : Functor F}} →
-              {A : Set} → {fa : F A } →
+moveQOutL : {A : Set} → {fa : F A } →
               {R : Set} → {P : R → A → Set} →
               Lift (λ a → (r : R) → P r a) fa →
               ((r : R) → Lift (P r) fa)
 moveQOutL lp r = applyL (λ x → x r) (lp)
 
-
-LPOr : ∀{F A} → {{ _ : Functor F }} → {fa : F A} → {P Q : Predicate A} →
+LPOr : ∀{A} → {fa : F A} → {P Q : Predicate A} →
   Lift P fa ⊎ Lift Q fa → Lift (P ∨ Q) fa
 LPOr (inj₁ pPfa) = applyL inj₁ pPfa
 LPOr (inj₂ pQfa) = applyL inj₂ pQfa
+
+splitL : {A : Set} → {fa : F A} → {P Q : Predicate A} →
+          Lift (P ∧ Q) fa → Lift P fa × Lift Q fa
+proj₁ (splitL pqfa) = applyL proj₁ pqfa
+proj₂ (splitL pqfa) = applyL proj₂ pqfa
