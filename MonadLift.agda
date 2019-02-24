@@ -55,7 +55,7 @@ bindRValid : ∀{A B P} → (ma : M A) →
   (Pma : Lift P ma) →
   (fᵣ : Σ A P → M B) →
   (f : A → M B) →
-  (Res f P ≡ fᵣ) →
+  (Res P f ≡ fᵣ) →
   Pma >>=R fᵣ ≡ ma >>= f
 bindRValid ma Pma fᵣ f proofR = sym $
   begin

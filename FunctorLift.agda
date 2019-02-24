@@ -37,7 +37,7 @@ fmapRValid : ∀{A B P} → (fa : F A) →
   (Pfa : Lift P fa) →
   (fᵣ : Σ A P → B) →
   (f : A → B) →
-  (Res f P ≡ fᵣ) →
+  (Res P f ≡ fᵣ) →
   fmapR fᵣ Pfa ≡ fmap f fa
 fmapRValid fa faLP fᵣ f proofR =
   begin
