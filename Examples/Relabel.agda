@@ -27,19 +27,25 @@ fresh = do
           modify suc
           return n
 
-relabel : {A : Set} → Tree A → State ℕ (Tree ℕ)
-relabel (leaf a) = do
-                    n ← fresh
-                    return (leaf n)
-relabel (node l r) = do
-                        l' ← relabel l
-                        r' ← relabel r
-                        return (node l' r')
+module WithMonad where
+  relabel : {A : Set} → Tree A → State ℕ (Tree ℕ)
+  relabel (leaf a) = do
+                      n ← fresh
+                      return (leaf n)
+  relabel (node l r) = do
+                          l' ← relabel l
+                          r' ← relabel r
+                          return (node l' r')
 
+module WithApplicative where
+  relabel : {A : Set} → Tree A → State ℕ (Tree ℕ)
+  relabel (leaf a) = ⦇ leaf fresh ⦈
+  relabel (node l r) = ⦇ node (relabel l) (relabel r) ⦈
 
-exampleTree : Tree Bool
-exampleTree = node (leaf true) (node (node (leaf false) (leaf false)) (leaf true))
-
+module WithApplicativeAndFmap where
+  relabel : {A : Set} → Tree A → State ℕ (Tree ℕ)
+  relabel (leaf a) = fmap (λ n → leaf n) fresh
+  relabel (node l r) = ⦇ node (relabel l) (relabel r) ⦈
 
 
 {-
