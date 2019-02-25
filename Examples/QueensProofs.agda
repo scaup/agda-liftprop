@@ -2,10 +2,12 @@ module Examples.QueensProofs where
 
 open import Examples.Queens
 open import FunctorTC
+open import FunctorLift
+open import MonadLift renaming (returnL to return ; _>>=L_ to _>>=_)
 open import Monads.List
-open import Lift
 open import Functors.List
-open import Lift.MonadTC renaming (_>>=L_ to _>>=_; returnL to return)
+
+open import Examples.ListFunctionsProofs
 
 -- stdlib {{{
 
