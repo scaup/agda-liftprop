@@ -114,37 +114,3 @@ _,L_ {P} {Q} {P?} {Q?} lpP lpQ = lemmaResPartReverseS (P? ∧? Q?) easy
               lll a | no ¬p | yes p | yes p₁ | ()
               lll a | no ¬p | yes p | no ¬p₁ = refl
               lll a | no ¬p | no ¬p₁ = refl
-
---------------------
-
-module OverUnit {C : Set} {P Q : Predicate ⊤} where
-
-  _,cont_ : ((P tt → C) → C) → ((Q tt → C) → C) → (((P ∧ Q) tt → C) → C)
-  (pmu ,cont qmu) pq* = result
-    where p* : Q tt → (P tt → C)
-          p* q = λ p → pq* (p , q)
-          q* : Q tt → C
-          q* = pmu ∘ p*
-          result : C
-          result = qmu q*
-
-  _,LU_ : ∀ {mu : (⊤ → C) → C} → Lift P mu → Lift Q mu → Lift (P ∧ Q) mu
-  witness (pmu ,LU qmu) upq* = (pu ,cont qu) pq*
-    where pu : (P tt → C) → C
-          pu p* = witness pmu (p* ∘ proj₂)
-          qu : (Q tt → C) → C
-          qu q* = witness qmu (q* ∘ proj₂)
-          pq* : (P ∧ Q) tt → C
-          pq* (p , q) = upq* (tt , (p , q))
-  corresponds (_,LU_ {mu} pmu qmu) = funext λ u* → begin
-    mu u*
-      ≡⟨ cong-app qmu-cor u* ⟩
-    witness qmu ((λ {uq} → u*) ∘ proj₁)
-      ≡⟨ cong (witness qmu) (funext (λ {(tt , q) → {!OOPS!!}})) ⟩
-    witness qmu (λ uq* → mu u*)
-      ≡⟨ cong (λ r → witness qmu (λ uq* → r)) (cong-app pmu-cor u*) ⟩
-    witness (pmu ,LU qmu) ((λ {upq} → u*) ∘ proj₁) ∎
-    where pmu-cor : mu ≡ λ u* → witness pmu ((λ {up} → u*) ∘ proj₁)
-          pmu-cor = corresponds pmu
-          qmu-cor : mu ≡ λ u* → witness qmu ((λ {uq} → u*) ∘ proj₁)
-          qmu-cor = corresponds qmu
