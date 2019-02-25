@@ -73,7 +73,3 @@ record Monad (M : Set → Set) : Set₁ where
       (ma >>= (fmap g ∘ f)) ∎
 
 open Monad {{...}} public
-
-{-# DISPLAY Monad._>>=_ imp a b = a >>= b #-}
--- {-# DISPLAY Monad.return i a = return a #-}
--- {-# DISPLAY Monad.return i = return #-} -- f ∘ return

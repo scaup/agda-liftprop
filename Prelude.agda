@@ -69,13 +69,3 @@ module Integers where
   instance
     eqDecℕ : EqDec ℕ
     eqDecℕ = record { _≟_ = _≟ℕ_ }
-
-
-
-{-
-
-    nodup : List A → Bool
-    nodup [] = true
-    nodup (x ∷ xs) = not (elem x xs) && nodup xs
-
--}

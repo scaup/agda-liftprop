@@ -73,12 +73,6 @@ applyL : {A : Set} → {fa : F A } → {P Q : Predicate A} →
           ({a : A} → P a → Q a) → Lift P fa → Lift Q fa
 applyL {fa = fa} imp lp = subsL unit (fmapL {f = id} imp lp)
 
--- moveQInL : {A : Set} → {fa : F A } →
-              -- {R : Set} → {P : R → A → Set} →
-              -- ((r : R) → Lift (P r) fa) →
-              -- Lift (λ a → (r : R) → P r a) fa
--- moveQInL lp = applyL (λ {a} x → {!!}) (lp {!!}) -- misschien enkel geldig voor subclasse?
-
 moveQOutL : {A : Set} → {fa : F A } →
               {R : Set} → {P : R → A → Set} →
               Lift (λ a → (r : R) → P r a) fa →

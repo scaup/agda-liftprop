@@ -11,5 +11,3 @@ record Functor (F : Set → Set) : Set₁ where
     unit : {A : Set} → {fa : F A} → fmap {X = A} {Y = A} id fa ≡ fa
 
 open Functor {{...}} public
-
--- {-# DISPLAY Functor.fmap imp a = fmap a #-}

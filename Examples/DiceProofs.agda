@@ -5,6 +5,8 @@ open import ApplicativeLift renaming (_<*>L_ to _<*>_ ; pureL to pure)
 open import FunctorLift
 
 open import Monads.IO
+open import Applicatives.IO
+open import Functors.IO
 open import Monads.List
 open import Functors.List
 
