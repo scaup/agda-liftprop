@@ -1,30 +1,28 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 module Monads.IO where
 
-open import MonadTC
-open import FunctorTC
 open import Functors.IO
+open import Applicatives.IO
 
-open import Postulates
+open import MonadTC
 
--- stdlib {{{
+-- postulate
+  -- ioMonad : Monad IO
 
-open import Relation.Binary.PropositionalEquality
-open ≡-Reasoning
 
-open import Agda.Builtin.IO public
-open import Agda.Builtin.String public
-
--- }}}
+postulate
+  _>>=IO_ : {X Y : Set} → IO X → (X → IO Y) → IO Y
 
 instance
   ioMonad : Monad IO
-  Monad.return ioMonad = returnIO
-  Monad._>>=_ ioMonad = _>>=IO_
-  Monad.leftId ioMonad = leftIdIO
-  Monad.rightId ioMonad = rightIdIO
-  Monad.assoc ioMonad = assocIO
-  Monad.functorM ioMonad = ioFunctor
-  Monad.compatiblefmap ioMonad = refl
+  open Monad
+  applicativeM ioMonad = ioApplicative
+  _>>=_ ioMonad = _>>=IO_
+  leftId ioMonad = {!!}
+  rightId ioMonad = {!!}
+  assoc ioMonad = {!!}
+  compatible<*> ioMonad = {!!}
 
-{-# DISPLAY _>>=IO_ a b = a >>= b #-}
-{-# DISPLAY returnIO = return #-}
+-- {-# DISPLAY _>>=IO_ a b = a >>= b #-}
+-- {-# DISPLAY returnIO = return #-}

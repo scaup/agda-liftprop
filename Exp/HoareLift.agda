@@ -39,7 +39,7 @@ corresponds (_>>=L_ {k = k} {f = f} kP fP) =
     forget (witness kP >>=H (witness ∘ fP)) ∎
 
 returnL : {S A : Set} →
-  (a : A) → Lift {A} {S} (λ a' s₂ s₃ → s₂ ≡ s₃ × a' ≡ a) (return a)
+  (a : A) → Lift {A} {S} (λ a' s₁ s₂ → s₁ ≡ s₂ × a' ≡ a) (return a)
 witness (returnL a) = returnH a
 corresponds (returnL a) = refl
 
@@ -47,7 +47,7 @@ infixr 2 _⇒_
 
 _⇒_ : ∀{S A P Q} → {k : State S A} →
      Lift P k →
-     (∀{a s₁ s₂} → (P a s₁ s₂) → (Q a s₁ s₂)) →
+     (∀{a s₁ s₃} → (P a s₁ s₃) → (Q a s₁ s₃)) →
      Lift Q k
 witness (kP ⇒ imp) = witness kP ⇒H imp
 corresponds (kP ⇒ imp) = corresponds kP

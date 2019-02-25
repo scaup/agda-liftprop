@@ -7,6 +7,7 @@ open import MonadTC
 open import ApplicativeTC
 open import Monads.IO
 open import Applicatives.IO
+open import Functors.IO
 open import Monads.List
 open import Applicatives.List
 

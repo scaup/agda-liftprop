@@ -3,7 +3,7 @@ module Monads.State where
 open import MonadTC
 
 open import Functors.State
-open import Applicatives.State public
+open import Applicatives.State
 
 open import Postulates
 
