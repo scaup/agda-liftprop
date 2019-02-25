@@ -1,82 +1,62 @@
 module Examples.QueensProofs where
 
+open import Examples.ListFunctions
 open import Examples.Queens
+open import Examples.ListFunctionsProofs
+open import Prelude
+open Prelude.Integers
+open Prelude.Booleans
+
 open import FunctorTC
 open import FunctorLift
 open import MonadLift renaming (returnL to return ; _>>=L_ to _>>=_)
 open import Monads.List
 open import Functors.List
 
-open import Examples.ListFunctionsProofs
-
--- stdlib {{{
-
-open import Data.Nat
--- open import Data.Integer renaming (_-_ to _-ℤ_ ; _⊖_ to _-_ ; _+_ to _+ℤ_ ; _<_ to _<ℤ_)
 open import Data.List hiding (filter)
-open import Data.Bool hiding (_≟_)
 open import Data.Product hiding (zip)
-open import Data.Unit hiding (_≟_; _≤?_; _≤_)
-open import Data.Empty
-open import Data.Sum
-open import Function
-
-open import Relation.Unary using (Decidable)
-open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality hiding ([_])
 
--- }}}
+Fitting : (n : ℕ) → Predicate QConfig
+Fitting n = Lift (λ q → q ≤ pred n)
 
-UptoBound : (n : ℕ) → Lift (λ x → x < n) (upto n)
-UptoBound zero = []L
-UptoBound (suc n) = applyL s≤s (rangeUpBound 0 n)
-
-
-queensFit : (n : ℕ) → (k : ℕ) → Lift (Lift λ q → q < n) (queens n k)
-queensFit n zero = return ([] , []L)
-queensFit n (suc k) =
+queenConfigsFit : (n : ℕ) → (k : ℕ) → Lift (Fitting n) (queenConfigs n k)
+queenConfigsFit n zero = return ([] , []L)
+queenConfigsFit n (suc k) =
   do
-    (qs , qsFit) ← queensFit n k
-    (q , qFit) ← filterPreserves (λ q → qs areNotAttacking q) (UptoBound n)
+    (qs , qsFit) ← queenConfigsFit n k
+    (q , qFit) ← filterPreserves (λ q → qs areNotAttacking q) (rangeUpBound 0 (pred n))
     return (qs ++ [ q ] , (qsFit ++L [ qFit ]L))
-
--- helper functions {{{
-
-_∈_ : {A : Set} → A → List A → Set
-a ∈ [] = ⊥
-a ∈ (x ∷ xs) = a ≡ x ⊎ (a ∈ xs)
-
-_∉_ : {A : Set} → A → List A → Set
-a ∉ xs = ¬ a ∈ xs
 
 NoDup : {A : Set} → List A → Set
 NoDup [] = ⊤
-NoDup (x ∷ xs) = x ∉ xs × NoDup xs
+NoDup (x ∷ xs) = {!!} --  x ∉ xs × NoDup xs
 
--- }}}
-
-ArePeaceful : List ℕ → Set
-ArePeaceful qs
+Peaceful : List ℕ → Set
+Peaceful qs
   = NoDup (fmap upwardDiagonal coordinates)
   × NoDup (fmap downwardDiagonal coordinates)
   × NoDup (fmap row coordinates)
     where
       coordinates = toCoordinates qs
 
-bookkeeping : (qs : List ℕ) → (q : ℕ) →
-  ArePeaceful qs → (qs areNotAttacking q ≡ true) →
-  ArePeaceful (qs ++ [ q ])
-bookkeeping qs q qsP b = {!!}
-                       , {!!}
-                       , {!!}
+addPeaceFully : (qs : List ℕ) → (q : ℕ) →
+  Peaceful qs → (qs areNotAttacking q ≡ true) →
+  Peaceful (qs ++ [ q ])
+addPeaceFully qs q qsP b = {!!}
+                         , {!!}
+                         , {!!}
 
-queensPeaceful : (n : ℕ) → (k : ℕ) → Lift ArePeaceful (queens n k)
-queensPeaceful n zero = return ([] , (tt , tt , tt))
-queensPeaceful n (suc k) =
+queenConfigsPeaceful : (n : ℕ) → (k : ℕ) → Lift Peaceful (queenConfigs n k)
+queenConfigsPeaceful n zero = return ([] , (tt , tt , tt))
+queenConfigsPeaceful n (suc k) =
   do
-    (qs , qsPeaceful) ← queensPeaceful n k
-    (q , qs¬Attackingq) ← filterNew ((λ q → qs areNotAttacking q)) (upto n)
-    return ((qs ++ [ q ]) , bookkeeping qs q qsPeaceful qs¬Attackingq )
+    (qs , qsPeaceful) ← queenConfigsPeaceful n k
+    (q , qs¬Attackingq) ← filterNew ((λ q → qs areNotAttacking q)) (range 0 (pred n))
+    return ((qs ++ [ q ]) , addPeaceFully qs q qsPeaceful qs¬Attackingq )
 
-queensAll : (n : ℕ) → (k : ℕ) → Lift _ (queens n k)
-queensAll n k = (queensPeaceful n k) ,L (queensFit n k)
+Valid : ℕ → Predicate QConfig
+Valid n = Fitting n ∧ Peaceful
+
+queenConfigsValid : (n : ℕ) → (k : ℕ) → Lift (Valid n) (queenConfigs n k)
+queenConfigsValid n k = queenConfigsFit n k ,L queenConfigsPeaceful n k

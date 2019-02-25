@@ -21,15 +21,14 @@ _↦_ : {X Y : Set} → Predicate X → Predicate Y → Predicate (X → Y)
 (_↦_ {X} P Q) f = {x : X} → P x → Q (f x)
 
 module Booleans where
-  open import Data.Bool hiding (_≟_) renaming (_∧_ to _&&_; _∨_ to _||_)
+  open import Data.Bool hiding (_≟_) renaming (_∧_ to _&&_; _∨_ to _||_) public
 
 module Integers where
   open import Data.Bool hiding (_≟_) renaming (_∧_ to _&&_; _∨_ to _||_)
 
   open import Data.List
-  -- open import Data.List.Membership.DecSetoid
-  open import Data.Nat renaming (_≟_ to _≟ℕ_)
-  open import Data.Integer renaming (_≟_ to _≟ℤ_ ; _-_ to _-ℤ_ ; _⊖_ to _-_ ; _+_ to _+ℤ_ ; _<_ to _<ℤ_)
+  open import Data.Nat renaming (_≟_ to _≟ℕ_) public
+  open import Data.Integer using (ℤ) renaming (_≟_ to _≟ℤ_ ; _⊖_ to _-_ ; _+_ to _+ℤ_ ; _<_ to _<ℤ_) public
 
   open import Relation.Binary
   open import Relation.Nullary
