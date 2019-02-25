@@ -25,19 +25,6 @@ invertP-cons : ∀ {A} {P : Predicate A} {x} {xs} → Lift P (x ∷ xs) → P x 
 invertP-cons record { witness = [] ; corresponds = () }
 invertP-cons record { witness = ((x , p) ∷ xps) ; corresponds = refl } = p , record { witness = xps ; corresponds = refl }
 
--- destruct : {A : Set} → {P : Predicate A} → {xs : List A} → Lift P xs → xs ≡ [] ⊎ Σ[ a ∈ A ] P a × Σ[ t ∈ List A ] Lift P t × (xs ≡ a ∷ t)
--- destruct record { witness = [] ; corresponds = corresponds } = inj₁ corresponds
--- destruct record { witness = ((x , px) ∷ xs) ; corresponds = refl } = inj₂ (x , px , fmap proj₁ xs , record { witness = xs ; corresponds = refl } , refl)
-
-hdL : {A : Set} {P : Predicate A} {a : A} {as : List A} → Lift P (a ∷ as) → P a
-hdL {A} {P} {a} {as} record { witness = [] ; corresponds = () }
-hdL {A} {P} {.(proj₁ xpx)} {.(fmap proj₁ xpxs)} record { witness = (xpx ∷ xpxs) ; corresponds = refl } = proj₂ xpx
-
-tlL : {A : Set} {P : Predicate A} {a : A} {as : List A} → Lift P (a ∷ as) → Lift P as
-tlL {A} {P} {a} {as} record { witness = [] ; corresponds = () }
-tlL {A} {P} {.(proj₁ xpx)} {.(fmap proj₁ xpxs)} record { witness = (xpx ∷ xpxs) ; corresponds = refl } =
-  record { witness = xpxs ; corresponds = refl }
-
 [_]L : {A : Set} → {P : Predicate A} → {a : A} → P a → Lift P [ a ]
 [_]L pa = pa ∷L []L
 
@@ -80,19 +67,27 @@ rangeDownBound (suc n) zero = []L
 rangeDownBound zero (suc m) = rangeDownBound zero m ++L [ z≤n ]L
 rangeDownBound (suc n) (suc m) = fmapL s≤s (rangeDownBound n m)
 
--- Voorstel andreas
 
 indList : {A : Set} (C : List A → Set) (c[] : C []) (c∷ : (x : A) (xs : List A) → C xs → C (x ∷ xs)) (as : List A) → C as
 indList C c[] c∷ [] = c[]
 indList C c[] c∷ (x ∷ as) = c∷ x as (indList C c[] c∷ as)
 
-indListL' : {A : Set} {P : Predicate A} (C : (xs : List A) → Lift P xs → Set)
+indListL : {A : Set} {P : Predicate A} (C : (xs : List A) → Lift P xs → Set)
            (c[] : C [] []L)
            (c∷ : ∀{x : A}(px : P x){xs : List A}(pxs : Lift P xs) → C xs pxs → C (x ∷ xs) (px ∷L pxs))
            {as : List A}(pas : Lift P as) → C as pas
-indListL' C c[] c∷ {[]} record { witness = [] ; corresponds = refl } = c[]
-indListL' C c[] c∷ {[]} record { witness = (x ∷ witness₁) ; corresponds = () }
-indListL' C c[] c∷ {x ∷ as} record { witness = [] ; corresponds = () }
-indListL' C c[] c∷ {.(proj₁ xpx) ∷ .(fmap proj₁ xpxs)} record { witness = (xpx ∷ xpxs) ; corresponds = refl } =
+indListL C c[] c∷ {[]} record { witness = [] ; corresponds = refl } = c[]
+indListL C c[] c∷ {[]} record { witness = (x ∷ witness₁) ; corresponds = () }
+indListL C c[] c∷ {x ∷ as} record { witness = [] ; corresponds = () }
+indListL C c[] c∷ {.(proj₁ xpx) ∷ .(fmap proj₁ xpxs)} record { witness = (xpx ∷ xpxs) ; corresponds = refl } =
   c∷ (proj₂ xpx) (record { witness = xpxs ; corresponds = refl })
-     (indListL' C c[] c∷ (record { witness = xpxs ; corresponds = refl }))
+     (indListL C c[] c∷ (record { witness = xpxs ; corresponds = refl }))
+
+{- PSUEDO-CODE
+
+_++L_ : ∀{A P} → {xs ys : List A} → Lift P xs → Lift P ys → Lift P (xs ++ ys)
+_++L_ {xs = xs} xsP ysP  by indListL xsP
+_++L_ {xs = []} []L ysP  = ysP
+_++L_ {xs = a ∷ as} (px ∷L asP) ysP = pa ∷L (asP ++L ysP)
+
+-}

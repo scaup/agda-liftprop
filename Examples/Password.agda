@@ -2,24 +2,22 @@ module Examples.Password where
 
 open import MonadTC
 open import Monads.IO
+open import Applicatives.IO
 open import Functors.IO
 open import Monads.List
 
--- stdlib {{{
-
-open import Data.List hiding (length)
 open import Data.Nat
-open import Function
-open import Relation.Nullary.Decidable
 open import Relation.Nullary
 
--- }}}
-
 postulate
+  String : Set
   random : ℕ → IO String
   length : String → ℕ
+  getLine : IO String
 
-open import Lift.MonadTC using (if?_then_else_)
+if?_then_else_ : {A P : Set} → Dec P → A → A → A
+if? yes p then a else b = a
+if? no ¬p then a else b = b
 
 retry : ℕ → IO String
 retry 0 = random 20

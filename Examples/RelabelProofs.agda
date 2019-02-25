@@ -67,6 +67,21 @@ module NoDuplicates where
       proofNoDups : NoDuplicates t
 
   open import Exp.Hoare
+  open import Function
+
+  relabelN : {A : Set} → (t : Tree A) → Hoare ℕ (Tree ℕ) StrongerResult
+  relabelN (leaf a) = (toHoare fresh >>=H (returnH ∘ leaf)) ⇒H λ x → {!!}
+  relabelN (node l r) = (relabelN l >>=H λ l' →
+                         relabelN r >>=H λ r' →
+                         returnH (node l' r')) ⇒H {!!}
+
+  open import Exp.HoareLift using (forget)
+  open import Relation.Binary.PropositionalEquality
+  open import Postulates
+  test : {A : Set} → (t : Tree A) → forget (relabelN t) ≡ relabel t
+  test (leaf a) = refl
+  test (node t t₁) = funext λ a → {!!}
+
   open import Exp.HoareLift renaming (_>>=L_ to _>>=_ ; returnL to return)
 
   relabelNoDups : {A : Set} → (t : Tree A) → Lift StrongerResult (relabel t)
