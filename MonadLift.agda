@@ -4,6 +4,7 @@ module MonadLift {M : Set → Set} {{mImp : Monad M}} where
 
 open import ApplicativeLift {M} public
 open import FunctorLift {M}
+open import FunctorTC
 open import Relation.Binary.PropositionalEquality
 
 open import Postulates

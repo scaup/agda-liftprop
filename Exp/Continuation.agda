@@ -14,48 +14,9 @@ open import Relation.Unary using (Decidable)
 open import Relation.Nullary
 open ≡-Reasoning
 
--- boring {{{
-
-Predicate : (A : Set) → Set₁
-Predicate A = A → Set
-
-_∨_ : {A : Set} → Predicate A → Predicate A → Predicate A
-(P ∨ Q) a = P a ⊎ Q a
-
-_∧_ : {A : Set} → Predicate A → Predicate A → Predicate A
-(P ∧ Q) a = P a × Q a
-
--- Res restricts to values satisfying P by ignoring the proof of P.
-Res : {A B : Set} → (P : Predicate A) → (A → B) → (Σ A P → B)
-Res {A} {B} P f = f ∘ proj₁
-
-return : {X C : Set} →
-          X → ((X → C) → C)
-return = _|>_
-
-_>>=_ : {X Y C : Set} →
-        ((X → C) → C) →
-        (X → (Y → C) → C) →
-        ((Y → C) → C)
-cx >>= f = λ y → cx (flip f y)
-
-fmap : {X Y C : Set} →
-        (X → Y) →
-        ((X → C) → C) →
-        ((Y → C) → C)
-fmap f c = λ yc → c (yc ∘ f)
-
-unitc : {X C : Set} → X → ((X → C) → C)
-unitc x = λ xc → xc x
-
--- }}}
-
-record Lift {C A : Set} (P : Predicate A) (cont : (A → C) → C) : Set where
-  field
-    witness : ((Σ A P → C) → C)
-    corresponds : cont ≡ λ ac → witness (ac ∘ proj₁)
-
-open Lift
+open import FunctorTC
+open import Functors.Cont
+open import FunctorLift
 
 postulate
   C : Set

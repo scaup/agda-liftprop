@@ -20,13 +20,13 @@ open ≡-Reasoning
 open import Examples.Dice
 open WithMonad using (twoDice)
 
-open import Examples.DiceProofs using (sumBound6IsBound12 ; dieBound6)
+open import Examples.DiceProofs using (sumOfBound6IsBound12 ; dieBound6)
 
 aWitness : IO (Σ ℕ λ x → x ≤ 12)
 aWitness = do
              (x , px) ← witness dieBound6
              (y , py) ← witness dieBound6
-             return (x + y , sumBound6IsBound12 px py)
+             return (x + y , sumOfBound6IsBound12 px py)
 
 cumbersomeProof : twoDice ≡ fmap proj₁ aWitness
 cumbersomeProof =
@@ -53,13 +53,13 @@ cumbersomeProof =
   ≡⟨ cong (_>>=_ _) (funext λ a → cong (_>>=_ _) (funext λ _ → sym (fmap-return proj₁ _))) ⟩
     (do (x , px) ← witness dieBound6
         (y , py) ← witness dieBound6
-        fmap (proj₁ {B = λ n → n ≤ 12}) (return (x + y , sumBound6IsBound12 px py)))
+        fmap (proj₁ {B = λ n → n ≤ 12}) (return (x + y , sumOfBound6IsBound12 px py)))
   ≡⟨ cong (_>>=_ _) (funext λ _ → sym (fmap-move->>= _ _ _ )) ⟩
     (do (x , px) ← witness dieBound6
         fmap (proj₁ {B = λ n → n ≤ 12})
           do (y , py) ← witness dieBound6
-             return (x + y , sumBound6IsBound12 px py))
+             return (x + y , sumOfBound6IsBound12 px py))
   ≡⟨ sym (fmap-move->>= _ _ _) ⟩
     fmap proj₁ (do (x , px) ← witness dieBound6
                    (y , py) ← witness dieBound6
-                   return (x + y , sumBound6IsBound12 px py)) ∎
+                   return (x + y , sumOfBound6IsBound12 px py)) ∎

@@ -3,8 +3,6 @@ module Exp.Hoare where
 -- open import Functors.State
 open import Functors.State
 
--- stdlib {{{
-
 open import Data.Nat
 open import Data.Bool hiding (_≟_; _∧_; _∨_)
 open import Data.Product
@@ -17,22 +15,6 @@ open import Relation.Unary using (Decidable)
 open import Relation.Nullary
 open import Relation.Binary.PropositionalEquality
 open ≡-Reasoning
-
--- }}}
-
-
-{-
--- OVERVIEW
-+----------------+-------------+-----+
-|                | General     |     |
-+----------------+-------------+-----+
-|                |             |     |
-+----------------+-------------+-----+
-|                |             |     |
-+----------------+-------------+-----+
-|                |             |     |
-+----------------+-------------+-----+
--}
 
 -- from 'The Hoare State Monad' by Wouter Swierstra
 

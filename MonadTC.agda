@@ -1,6 +1,6 @@
 module MonadTC where
 
-open import ApplicativeTC public
+open import ApplicativeTC
 open import Postulates
 
 open import Function
