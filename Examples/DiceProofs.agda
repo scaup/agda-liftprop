@@ -14,9 +14,6 @@ open import Data.List
 
 open import Examples.Dice
 
-_⌜+⌝_ : {n m : ℕ} {x : ℕ} → x ≤ n → {y : ℕ} → y ≤ m → x + y ≤ (n + m)
-_⌜+⌝_ = λ x x₁ → +-mono-≤ x x₁
-
 postulate
   sumOfBound6IsBound12 : {x : ℕ} → x ≤ 6 → {y : ℕ} → y ≤ 6 → x + y ≤ 12
 

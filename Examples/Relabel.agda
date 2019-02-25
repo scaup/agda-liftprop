@@ -3,8 +3,10 @@
 module Examples.Relabel where
 
 open import MonadTC
+open import ApplicativeTC
 open import FunctorTC
 open import Monads.State
+open import Applicatives.State
 open import Functors.State
 
 -- stdlib {{{
@@ -46,33 +48,3 @@ module WithApplicativeAndFmap where
   relabel : {A : Set} → Tree A → State ℕ (Tree ℕ)
   relabel (leaf a) = fmap (λ n → leaf n) fresh
   relabel (node l r) = ⦇ node (relabel l) (relabel r) ⦈
-
-
-{-
-
-
-
-
--- noduplicates {{{
-
-postulate
-  _IsLowerBoundFor_ : ℕ → Tree ℕ → Set
-  _IsUpperBoundFor_ : ℕ → Tree ℕ → Set
-  NoDuplicates : Tree ℕ → Set
-
-record StrongerResult (t : Tree ℕ) (n₁ : ℕ) (n₂ : ℕ) : Set where
-  field
-    initial≤final : n₁ ≤ n₂
-    proofLower : n₁ IsLowerBoundFor t
-    proofUpper : (pred n₂) IsUpperBoundFor t
-    proofNoDups : NoDuplicates t
-
-postulate
-  f : {n₁ n₂ n₃ : ℕ} {l' : Tree ℕ} → {r' : Tree ℕ} →
-      StrongerResult l' n₁ n₂ → StrongerResult r' n₂ n₃ →
-      StrongerResult (node l' r') n₁ n₃
-
-
-
--- }}}
--}

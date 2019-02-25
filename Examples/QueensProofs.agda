@@ -28,9 +28,8 @@ queenConfigsFit n (suc k) =
     (q , qFit) ← filterPreserves (λ q → qs areNotAttacking q) (rangeUpBound 0 (pred n))
     return (qs ++ [ q ] , (qsFit ++L [ qFit ]L))
 
-NoDup : {A : Set} → List A → Set
-NoDup [] = ⊤
-NoDup (x ∷ xs) = {!!} --  x ∉ xs × NoDup xs
+postulate
+  NoDup : {A : Set} → List A → Set
 
 Peaceful : List ℕ → Set
 Peaceful qs
@@ -40,15 +39,14 @@ Peaceful qs
     where
       coordinates = toCoordinates qs
 
-addPeaceFully : (qs : List ℕ) → (q : ℕ) →
-  Peaceful qs → (qs areNotAttacking q ≡ true) →
-  Peaceful (qs ++ [ q ])
-addPeaceFully qs q qsP b = {!!}
-                         , {!!}
-                         , {!!}
+postulate
+  emptyConfig : Peaceful []
+
+  addPeaceFully : (qs : List ℕ) → (q : ℕ) →
+    Peaceful qs → (qs areNotAttacking q ≡ true) → Peaceful (qs ++ [ q ])
 
 queenConfigsPeaceful : (n : ℕ) → (k : ℕ) → Lift Peaceful (queenConfigs n k)
-queenConfigsPeaceful n zero = return ([] , (tt , tt , tt))
+queenConfigsPeaceful n zero = return ([] , emptyConfig)
 queenConfigsPeaceful n (suc k) =
   do
     (qs , qsPeaceful) ← queenConfigsPeaceful n k

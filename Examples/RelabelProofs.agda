@@ -5,6 +5,7 @@ open Tree
 module Isomoporhic where
 
   open import Functors.State
+  open import Applicatives.State
   open import Monads.State
   open import MonadLift renaming (_>>=L_ to _>>=_; returnL to return)
   open import ApplicativeLift renaming (_<*>L_ to _<*>_ ; pureL to pure)
@@ -65,11 +66,6 @@ module NoDuplicates where
       proofUpper : (pred n₂) IsUpperBoundFor t
       proofNoDups : NoDuplicates t
 
-  postulate
-    f : {n₁ n₂ n₃ : ℕ} {l' : Tree ℕ} → {r' : Tree ℕ} →
-        StrongerResult l' n₁ n₂ → StrongerResult r' n₂ n₃ →
-        StrongerResult (node l' r') n₁ n₃
-
   open import Exp.Hoare
   open import Exp.HoareLift renaming (_>>=L_ to _>>=_ ; returnL to return)
 
@@ -83,6 +79,3 @@ module NoDuplicates where
                                  {- s₂ -} r' {- s₃ -} ← relabelNoDups r
                                           return (node l' r')
                              ) ⇒ λ{ (l' , s₂ , pl' , r' , s₃ , pr' , refl , refl) → {!!}}
-
-
-
