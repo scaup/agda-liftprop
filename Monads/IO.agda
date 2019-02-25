@@ -23,6 +23,3 @@ instance
   rightId ioMonad = {!!}
   assoc ioMonad = {!!}
   compatible<*> ioMonad = {!!}
-
--- {-# DISPLAY _>>=IO_ a b = a >>= b #-}
--- {-# DISPLAY returnIO = return #-}
