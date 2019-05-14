@@ -3,6 +3,7 @@ module Examples.DiceProofsManual where
 open import Examples.Dice
 
 open import Monads.IO
+open import Applicatives.IO
 open import Functors.IO
 open import Monads.List
 open import FunctorLift
