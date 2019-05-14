@@ -6,7 +6,7 @@ The `Playground` file imports all the necessary modules to define your own compu
 
 ## Tested with versions 
 
-Tested with Agda version 2.5.4.2, and std-lib v0.17
+Tested with Agda version 2.6.0, and std-lib v1.0
 
 ## Directory Structure
 
